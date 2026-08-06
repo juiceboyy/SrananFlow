@@ -1,0 +1,22 @@
+{
+  "entities": {
+    "ragCorpus": {
+      "title": "RAG Corpus Item",
+      "description": "Custom and pre-seeded Sranantongo grounding corpus items stored in Firestore",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "srananText": { "type": "string" },
+        "translation": { "type": "string" },
+        "phonetic": { "type": "string" },
+        "usageNotes": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "source": { "type": "string" },
+        "dateAdded": { "type": "string" }
+      },
+      "required": ["id", "title", "category", "srananText", "translation", "tags"]
+    }
+  }
+}

@@ -1,0 +1,271 @@
+import { RAGCorpusItem } from '../types';
+
+export const DEFAULT_SRANAN_CORPUS: RAGCorpusItem[] = [
+  // 1. Proverbs & Cultural Odo's
+  {
+    id: 'odo_01',
+    title: 'Odo: Kondei na kondei',
+    category: 'proverb',
+    srananText: 'Kondei na kondei, lanti na lanti.',
+    translation: 'Every country has its own customs, every people their own rules.',
+    usageNotes: 'Expresses respect for local customs when traveling or interacting with host cultures.',
+    tags: ['culture', 'proverb', 'respect', 'tradition'],
+    source: 'Surinamese Oral Tradition & Odo Collection',
+    dateAdded: '2026-08-01'
+  },
+  {
+    id: 'odo_02',
+    title: 'Odo: Meti inyi wata',
+    category: 'proverb',
+    srananText: 'Efu yu e libi na ini liba, no kosi krapasi.',
+    translation: 'If you live in the river, do not insult the caiman.',
+    usageNotes: 'Used to advise politeness and avoiding conflict with local authorities or hosts.',
+    tags: ['proverb', 'wisdom', 'politeness', 'caution'],
+    source: 'Surinamese Oral Tradition',
+    dateAdded: '2026-08-01'
+  },
+  {
+    id: 'odo_03',
+    title: 'Odo: Safrisafri e nyan switi',
+    category: 'proverb',
+    srananText: 'Safrisafri e tyari bun futu nanga switi nyanyan.',
+    translation: 'Patience and gentle steps bring good luck and sweet rewards.',
+    usageNotes: 'Encourages patience during learning or difficult tasks.',
+    tags: ['proverb', 'patience', 'encouragement'],
+    source: 'Traditional Sranan Proverbs',
+    dateAdded: '2026-08-01'
+  },
+  {
+    id: 'odo_04',
+    title: 'Odo: Kaka e singi',
+    category: 'proverb',
+    srananText: 'Kaka e singi fa a e sani fu en.',
+    translation: 'Every rooster crows according to its own nature / Everyone speaks from their perspective.',
+    usageNotes: 'Acknowledges diverse individual opinions.',
+    tags: ['proverb', 'perspective', 'expression'],
+    source: 'Surinamese Oral Tradition',
+    dateAdded: '2026-08-01'
+  },
+  {
+    id: 'odo_05',
+    title: 'Odo: Wan fowru no e meki summer',
+    category: 'proverb',
+    srananText: 'Wan finga no kan piki kaka.',
+    translation: 'One finger cannot pick up a louse / Working together is essential for success.',
+    usageNotes: 'Emphasizes community solidarity (Mapan / Yepi makandra).',
+    tags: ['proverb', 'community', 'cooperation'],
+    source: 'Surinamese Heritage Collection',
+    dateAdded: '2026-08-01'
+  },
+
+  // 2. Grammar Rules & Syntax Structure
+  {
+    id: 'gram_01',
+    title: 'Grammar: Past Tense Marker (Ben)',
+    category: 'grammar',
+    srananText: 'A wortu "ben" e poti strak na fesi verbum fu sori a pasi ten. E.g., "Mi ben waka na foto" (I walked in the city), "A ben sabi a tori" (He/she knew the story).',
+    translation: 'The particle "ben" is placed directly before the main verb to indicate past tense.',
+    usageNotes: 'Crucial tense marker. Does not inflect by person (mi ben, yu ben, a ben, wi ben, den ben).',
+    tags: ['grammar', 'past-tense', 'verbs', 'syntax'],
+    source: 'Sranantongo Grammar Manual',
+    dateAdded: '2026-08-01'
+  },
+  {
+    id: 'gram_02',
+    title: 'Grammar: Future Tense Marker (Sa / O)',
+    category: 'grammar',
+    srananText: 'A wortu "sa" (noso "o" in informal speech) e sori tamara ten. E.g., "Mi sa kon tamara" (I will come tomorrow), "Den o nyan es-esi" (They will eat soon).',
+    translation: 'The particle "sa" (or "o" informally) indicates future tense.',
+    usageNotes: 'Use "sa" for polite or definite future promises; "o" is common in daily speech.',
+    tags: ['grammar', 'future-tense', 'verbs'],
+    source: 'Sranantongo Syntax Guide',
+    dateAdded: '2026-08-01'
+  },
+  {
+    id: 'gram_03',
+    title: 'Grammar: Continuous Aspect Marker (E)',
+    category: 'grammar',
+    srananText: 'A wortu "e" e poti na fesi verbum fu sori aksi di e pasa right now. E.g., "Mi e leisi a buku" (I am reading the book), "Fa yu e waka?" (How are you doing?).',
+    translation: 'The particle "e" before a verb denotes ongoing progressive action (equivalent to -ing).',
+    usageNotes: 'Do not confuse with the pronoun "e" or preposition "a".',
+    tags: ['grammar', 'progressive', 'verbs', 'present'],
+    source: 'Sranantongo Grammar Manual',
+    dateAdded: '2026-08-01'
+  },
+  {
+    id: 'gram_04',
+    title: 'Grammar: Negation (No)',
+    category: 'grammar',
+    srananText: 'Poti "no" strak fosi a verbum noso tense auxiliary. E.g., "Mi no ben sabi" (I did not know), "A no e nyan meti" (He/she does not eat meat).',
+    translation: 'Negation is expressed by placing "no" immediately before the verb or tense auxiliary.',
+    usageNotes: 'Double negatives in Sranantongo reinforce negation (e.g., "Mi no abi wan sani" = I don\'t have anything).',
+    tags: ['grammar', 'negation', 'syntax'],
+    source: 'Sranan Language Structure',
+    dateAdded: '2026-08-01'
+  },
+  {
+    id: 'gram_05',
+    title: 'Grammar: Possessive Pronouns (Mi, Yu, En, Wi, Unu, Den)',
+    category: 'grammar',
+    srananText: 'Possessive markers: mi (my), yu (your), en (his/her/its), wi (our), unu (your plural), den (their). Placed before noun: "mi oso" (my house), "wi mati" (our friend).',
+    translation: 'Possessive pronouns precede the noun without change of form.',
+    usageNotes: 'Add "fu" for emphatic possession: "a oso fu mi" (the house of mine).',
+    tags: ['grammar', 'pronouns', 'possessive'],
+    source: 'Sranantongo Essentials',
+    dateAdded: '2026-08-01'
+  },
+
+  // 3. Essential Dictionary Terms & Cultural Expressions
+  {
+    id: 'dict_01',
+    title: 'Dictionary: Fa waka & Greetings',
+    category: 'dictionary',
+    srananText: 'Fa waka: How are you doing? / How is it going? (Lit. How walk?)\nFa de: How are things?\nBun mamanten: Good morning\nBun bakadina: Good afternoon\nBun neti: Good night\nOdi odi: Friendly formal greeting',
+    translation: 'Common Surinamese greetings and check-ins.',
+    usageNotes: 'Universal greetings used across Paramaribo and all districts.',
+    tags: ['dictionary', 'greetings', 'expressions'],
+    source: 'Paramaribo Everyday Lexicon',
+    dateAdded: '2026-08-01'
+  },
+  {
+    id: 'dict_06',
+    title: 'Dictionary: Natural Greetings & Welcome Rules',
+    category: 'dictionary',
+    srananText: 'Switi odi: A warm, pleasant greeting / hearty welcome\nWan switi kon: A warm welcome / Hearty arrival\nBun kon: Welcome!\nFa waka!: Hello! / How are you doing?\nRules: Never use "seryusu odi" for greetings or welcomes. In Sranantongo, "seryusu" means grave, solemn, or strict—not "warm" or "sincere". Use "switi odi", "wan switi kon", or "bun kon" instead.',
+    translation: 'Authentic Sranantongo welcome and greeting rules.',
+    usageNotes: 'NEVER pair "seryusu" with "odi" or greetings. "Seryusu" means grave/strict. Use "switi odi", "wan switi kon", or "bun kon" for warm greetings.',
+    tags: ['dictionary', 'greetings', 'etiquette', 'welcomes'],
+    source: 'Sranantongo Lexicon & Usage Rules',
+    dateAdded: '2026-08-06'
+  },
+  {
+    id: 'dict_02',
+    title: 'Dictionary: Expressions of Gratitude',
+    category: 'dictionary',
+    srananText: 'Gran tangi: Thank you very much / Big thanks\nTangi fu yu yepi: Thank you for your help\nSwiti srefi: Delicious / Fantastic / Really nice\nNo spang: Don\'t worry / No problem / It\'s all good',
+    translation: 'Politeness and gratitude terminology.',
+    usageNotes: '"No spang" is an iconic Surinamese expression of reassurance and relaxed positivity.',
+    tags: ['dictionary', 'gratitude', 'slang', 'expressions'],
+    source: 'Surinamese Lexicon & Idioms',
+    dateAdded: '2026-08-01'
+  },
+  {
+    id: 'dict_03',
+    title: 'Dictionary: Surinamese Gastronomy & Dining',
+    category: 'dictionary',
+    srananText: 'Pom: Traditional festive dish made with tayer root and chicken.\nMoksi alesi: Mixed rice cooked with coconut milk, saltfish, pork or chicken.\nRoti: Flatbread served with curry chicken (doksi) and potatoes.\nSaoto: Surinamese Javanese chicken soup with boiled egg and fried chips.\nSwiti nyan: Bon appétit / Enjoy your meal.\nDringi: Drink / Beverage.',
+    translation: 'Surinamese dishes and culinary terms.',
+    usageNotes: 'Essential for restaurant and market scenario grounding.',
+    tags: ['dictionary', 'food', 'culinary', 'culture'],
+    source: 'Surinamese Gastronomy Guide',
+    dateAdded: '2026-08-01'
+  },
+  {
+    id: 'dict_04',
+    title: 'Dictionary: Shopping, Market & Money',
+    category: 'dictionary',
+    srananText: 'Marwina / Markt: Market\nOmeni a e kostu?: How much does this cost?\nWan kilo: A kilogram\nAfi kilo: Half a kilogram\nKorting / Safrisafri préis: A small discount / reasonable price\nPai: Pay / Payment\nMoni: Money',
+    translation: 'Market transactions, weight units, and pricing phrases.',
+    usageNotes: 'Used when bargaining politely at Paramaribo Central Market.',
+    tags: ['dictionary', 'shopping', 'market', 'money'],
+    source: 'Paramaribo Commerce Terms',
+    dateAdded: '2026-08-01'
+  },
+  {
+    id: 'dict_05',
+    title: 'Dictionary: Direction & Places in Town',
+    category: 'dictionary',
+    srananText: 'Reti-han: To the right (Right hand)\nKruka-han: To the left (Left hand)\nWaka rektu fesi: Walk straight ahead\nFoto: City / Paramaribo downtown\nBus: Public bus / Mini-bus transport\nStation: Terminal or stop\nPe a presi de?: Where is the place located?',
+    translation: 'Navigation and city landmarks.',
+    usageNotes: 'Essential for direction-asking scenarios.',
+    tags: ['dictionary', 'directions', 'city', 'navigation'],
+    source: 'Surinamese Urban Geography',
+    dateAdded: '2026-08-01'
+  },
+
+  // 4. Cultural & Social Contexts
+  {
+    id: 'cult_01',
+    title: 'Culture: Respeki nanga Odi (Respect and Greetings)',
+    category: 'cultural',
+    srananText: 'In Suriname, starting any conversation—whether at a hotel, market, or office—with a warm personal greeting ("Fa waka", "Bun bakadina", "Odi") is considered essential manners. Asking directly for something without a greeting is considered abrupt.',
+    translation: 'Social norm: Always greet before requesting assistance.',
+    usageNotes: 'AI partners should model this warmth and acknowledge greetings.',
+    tags: ['culture', 'etiquette', 'greetings', 'social-norms'],
+    source: 'Surinamese Cultural Etiquette Manual',
+    dateAdded: '2026-08-01'
+  },
+  {
+    id: 'cult_02',
+    title: 'Culture: No Spang Mindset (Relaxed Hospitality)',
+    category: 'cultural',
+    srananText: '"No spang" reflects the Surinamese mindset of calm composure, warmth, and hospitality. Mistakes made by language learners are received with encouragement, laughter, and appreciation.',
+    translation: 'The "No spang" philosophy of patient, relaxed interaction.',
+    usageNotes: 'Guides the AI partner\'s patient, encouraging tone during practice.',
+    tags: ['culture', 'hospitality', 'mindset'],
+    source: 'Surinamese Cultural Studies',
+    dateAdded: '2026-08-01'
+  },
+
+  // 5. Pronunciation & Phonetic Stress Guides
+  {
+    id: 'pron_01',
+    title: 'Pronunciation: Greeting & Melodic Cadence (Fa waka)',
+    category: 'pronunciation',
+    srananText: 'Fa waka, mi mati?',
+    phonetic: 'FA WA-ka, mi MA-ti?',
+    translation: 'How are you doing, my friend?',
+    usageNotes: 'Melodic stress on CAPITALIZED syllables: FA WA-ka, mi MA-ti. Open vowels, avoiding Dutch guttural tone.',
+    tags: ['pronunciation', 'greetings', 'stress-capitalized'],
+    source: 'Sranantongo Phonetics Guide',
+    dateAdded: '2026-08-03'
+  },
+  {
+    id: 'pron_02',
+    title: 'Pronunciation: Odo Rhythm (Safrisafri)',
+    category: 'pronunciation',
+    srananText: 'Safrisafri e nyan switi',
+    phonetic: 'SAF-ri-SAF-ri e NYAN SWI-ti',
+    translation: 'Patience brings sweet rewards / Take it easy',
+    usageNotes: 'Rhythmic double stress on SAF-ri-SAF-ri. Nasal gliding on NYAN.',
+    tags: ['pronunciation', 'rhythm', 'odo', 'stress-capitalized'],
+    source: 'Sranantongo Phonetics Guide',
+    dateAdded: '2026-08-03'
+  },
+  {
+    id: 'pron_03',
+    title: 'Pronunciation: Gratitude & Polite Vowels (Grantangi)',
+    category: 'pronunciation',
+    srananText: 'Grantangi fu a yepi',
+    phonetic: 'GRAN-TAN-gi FU A YE-pi',
+    translation: 'Thank you very much for the help',
+    usageNotes: 'Slight nasalization on GRAN-TAN-gi. Soft semi-vowel transition in YE-pi.',
+    tags: ['pronunciation', 'politeness', 'stress-capitalized'],
+    source: 'Sranantongo Phonetics Guide',
+    dateAdded: '2026-08-03'
+  },
+  {
+    id: 'pron_04',
+    title: 'Pronunciation: Continuous Motion (Mi e go na foto)',
+    category: 'pronunciation',
+    srananText: 'Mi e go na foto',
+    phonetic: 'MI E GO NA FO-to',
+    translation: 'I am going to Paramaribo city center',
+    usageNotes: 'Flowing continuous vowel connection "MI E GO". Stress on FO-to.',
+    tags: ['pronunciation', 'verbs', 'stress-capitalized'],
+    source: 'Sranantongo Phonetics Guide',
+    dateAdded: '2026-08-03'
+  },
+  {
+    id: 'pron_05',
+    title: 'Pronunciation: Vowel Clarity (Awi & Nyan)',
+    category: 'pronunciation',
+    srananText: 'Kon wi nyan switi nyanyan makandra',
+    phonetic: 'KON WI NYAN SWI-ti NYAN-nyan MA-KAN-dra',
+    translation: 'Come let us enjoy a delicious meal together',
+    usageNotes: 'Clear open "a" and "i" vowels. Stress on KON WI and MA-KAN-dra.',
+    tags: ['pronunciation', 'dining', 'vowels', 'stress-capitalized'],
+    source: 'Sranantongo Phonetics Guide',
+    dateAdded: '2026-08-03'
+  }
+];
