@@ -592,7 +592,7 @@ CRITICAL CONSTRAINTS:
         contents,
         config: {
           systemInstruction,
-          temperature: 0.2
+          temperature: 0.0
         }
       })
     );
@@ -1276,6 +1276,8 @@ ${textToSpeak}`;
   }
 });
 
+export { app };
+
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
@@ -1296,4 +1298,7 @@ async function startServer() {
   });
 }
 
-startServer();
+if (!process.env.NETLIFY && !process.env.NETLIFY_LOCAL) {
+  startServer();
+}
+
