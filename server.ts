@@ -6,14 +6,16 @@ import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import dotenv from 'dotenv';
 import { DEFAULT_SRANAN_CORPUS } from './src/data/defaultCorpus';
-import { searchCorpus, formatGroundingPrompt, parseBulkTextToCorpus, normalizeSrananKey } from './src/lib/ragCorpus';
+import { searchCorpus, formatGroundingPrompt, parseBulkTextToCorpus, normalizeSrananKey, extractCorpusVocabularySet, findUngroundedWords, filterSnippetsToActualUsage } from './src/lib/ragCorpus';
 import { RAGCorpusItem } from './src/types';
 import {
   loadCorpusFromFirestore,
   saveCorpusItemsToFirestore,
   deleteCorpusItemFromFirestore,
   deleteBatchCorpusItemsFromFirestore,
-  resetFirestoreCorpusToDefault
+  resetFirestoreCorpusToDefault,
+  getTTSAudioFromFirestore,
+  saveTTSAudioToFirestore
 } from './src/lib/firebaseStore';
 import {
   buildSsmlFromText,
@@ -119,7 +121,7 @@ app.post('/api/chat', async (req, res) => {
     const combinedRagQuery = `${lastUserMessage} ${scenario?.title || ''} ${scenario?.description || ''} ${scenarioVocabTerms}`.trim();
 
     const useRag = (enableRag !== undefined ? enableRag : isRagGlobalEnabled) && isSranan;
-    const groundedSnippets = useRag ? searchCorpus(combinedRagQuery || 'Fa waka', activeCorpus, 5) : [];
+    const groundedSnippets = useRag ? searchCorpus(combinedRagQuery || 'Fa waka', activeCorpus, 10) : [];
     const ragGroundingInstructions = useRag && groundedSnippets.length > 0
       ? formatGroundingPrompt(groundedSnippets)
       : '';
@@ -127,9 +129,14 @@ app.post('/api/chat', async (req, res) => {
     const srananRules = isSranan ? `
 CRITICAL ACCENT & LANGUAGE RULES FOR SRANANTONGO (SURINAME):
 - You represent an authentic native Surinamese Sranantongo speaker from Paramaribo, Suriname.
-- Speak in natural, genuine Sranantongo vocabulary and syntax (e.g. 'Fa waka', 'Bun mamanten', 'Mi sa lobi...', 'Pe a presi de?').
-- GREETINGS & WELCOMES: NEVER use "seryusu odi" or "seryusu" in greetings/welcomes. In Sranantongo, "seryusu" means grave, solemn, or stern—it does NOT mean "warm" or "hearty". For greetings, ALWAYS use "switi odi", "wan switi kon", "bun kon", or "Fa waka!".
+- Speak ONLY in natural, genuine Sranantongo vocabulary and syntax (e.g. 'Fa waka', 'Bun mamanten', 'Wan bigi odi', 'Sa wani fu nyan', 'Kowru watra').
+- STRICT RAG & DICTIONARY MANDATE: Sranantongo is a Low-Resource Language. You MUST ONLY use authentic Sranantongo vocabulary and words explicitly present in the RAG Knowledge Base context below or standard verified Sranantongo dictionary entries.
+- ABSOLUTELY NO INVENTED WORDS OR AI HALLUCINATIONS:
+  1. COLD WATER: Strictly use "kowru watra" or "kowru dringi". NEVER use "koudi", "koudy", or "kewti watra" (these are AI hallucinations caused by forced Dutch suffixing).
+  2. HEARTY GREETINGS: Strictly use "wan bigi odi", "wan switi kon", "switi odi", or "bun kon". NEVER use "seryusu odi" or "seryusu" for greetings ("seryusu" means solemn or strict).
+  3. DINING PREFERENCES: Strictly use "sa wani fu nyan" or "wani nyan". NEVER use "lobi fu nyan" for asking food preferences ("lobi" means deep affection/love, not polite dining preference).
 - Do NOT output European Dutch text or Dutch accent markers.
+- In corrections, NEVER suggest an invented pseudo-word. If the user's input is valid or standard Sranantongo, do not flag it as an error.
 - In phonetic guides and extracted vocabulary, provide phonetics reflecting authentic Surinamese pronunciation (open vowels, melodic pitch, non-guttural consonants).
 - When domain-specific phonemes or pronunciations are required, format output in valid SSML wrapped in <speak>...</speak> containing <phoneme alphabet="ipa" ph="...">word</phoneme> tags.
 ` : '';
@@ -161,6 +168,7 @@ RULES:
         contents: prompt,
         config: {
           systemInstruction,
+          temperature: 0.0,
           responseMimeType: 'application/json',
           responseSchema: {
             type: Type.OBJECT,
@@ -221,13 +229,130 @@ RULES:
         .replace(/Wan seryusu/gi, 'Wan switi');
     }
 
-    // Attach Grounding Metadata to response
+    // ==========================================
+    // STRICT RAG VOCABULARY FILTERING LAYER
+    // ==========================================
+    if (isSranan) {
+      const vocabSet = extractCorpusVocabularySet(activeCorpus);
+      const ungroundedWords = findUngroundedWords(parsed.partnerReply || '', vocabSet);
+
+      if (ungroundedWords.length > 0) {
+        console.log(`[RAG Filter] Flagged ungrounded word(s) in AI partnerReply: [${ungroundedWords.join(', ')}]. Triggering automatic rephrase...`);
+
+        const rephrasePrompt = `You generated this Sranantongo response: "${parsed.partnerReply}"
+ENGLISH TRANSLATION: "${parsed.translation}"
+
+STRICT RAG AUDIT ALERT:
+The following word(s) are NOT in the verified Sranantongo RAG database: [${ungroundedWords.join(', ')}].
+
+MANDATORY AUTOMATIC REPHRASE:
+Automatically rephrase the response so that EVERY SINGLE WORD is verified and grounded in the RAG Knowledge Base below.
+If an unverified or invented word was used (e.g. non-existent compounds like "koto watra"), replace or remove it using authentic grounded terms (e.g. "kold watra" for cold water, "merki" for milk).
+
+RETRIEVED RAG CONTEXT:
+${ragGroundingInstructions || formatGroundingPrompt(groundedSnippets)}
+
+Return JSON:
+{
+  "partnerReply": "Rephrased response in authentic Sranantongo using ONLY grounded terms",
+  "translation": "Updated English translation"
+}`;
+
+        try {
+          const rephraseResponse = await callWithRetry(() =>
+            ai.models.generateContent({
+              model: 'gemini-3.6-flash',
+              contents: rephrasePrompt,
+              config: {
+                temperature: 0.0,
+                responseMimeType: 'application/json',
+                responseSchema: {
+                  type: Type.OBJECT,
+                  properties: {
+                    partnerReply: { type: Type.STRING },
+                    translation: { type: Type.STRING }
+                  },
+                  required: ['partnerReply', 'translation']
+                }
+              }
+            })
+          );
+
+          const rephrasedParsed = JSON.parse(rephraseResponse.text || '{}');
+          if (rephrasedParsed.partnerReply) {
+            console.log(`[RAG Filter] Rephrased response: "${rephrasedParsed.partnerReply}"`);
+            parsed.partnerReply = rephrasedParsed.partnerReply;
+            if (rephrasedParsed.translation) {
+              parsed.translation = rephrasedParsed.translation;
+            }
+          }
+        } catch (rephraseErr) {
+          console.error('[RAG Filter] Error during auto-rephrase:', rephraseErr);
+        }
+      }
+
+      // Filter corrections & extractedVocab to ensure no ungrounded terms are presented
+      if (parsed.corrections && Array.isArray(parsed.corrections)) {
+        parsed.corrections = parsed.corrections.filter((c: any) => {
+          const ungroundedInCorrection = findUngroundedWords(c.suggestedText || '', vocabSet);
+          if (ungroundedInCorrection.length > 0) {
+            console.log(`[RAG Filter] Excluded correction containing ungrounded term(s): ${ungroundedInCorrection.join(', ')}`);
+            return false;
+          }
+          return true;
+        });
+      }
+
+      if (parsed.extractedVocab && Array.isArray(parsed.extractedVocab)) {
+        parsed.extractedVocab = parsed.extractedVocab.filter((v: any) => {
+          const ungroundedInVocab = findUngroundedWords(v.word || '', vocabSet);
+          if (ungroundedInVocab.length > 0) {
+            console.log(`[RAG Filter] Excluded extracted vocab containing ungrounded term(s): ${ungroundedInVocab.join(', ')}`);
+            return false;
+          }
+          return true;
+        });
+      }
+    }
+
+    // Anti-Hallucination Replacements based on SrananFlow Hallucinatie & Fouten-Checker guide
+    const sanitizeSrananText = (text: string): string => {
+      if (!text) return text;
+      return text
+        .replace(/\bkewti watra\b/gi, 'kowru watra')
+        .replace(/\bkoudi watra\b/gi, 'kowru watra')
+        .replace(/\bkoudy watra\b/gi, 'kowru watra')
+        .replace(/\bkoudi dringi\b/gi, 'kowru dringi')
+        .replace(/\bkoudi\b/gi, 'kowru')
+        .replace(/\bkoudy\b/gi, 'kowru')
+        .replace(/\bseryusu odi\b/gi, 'wan bigi odi')
+        .replace(/\blobi fu nyan\b/gi, 'sa wani fu nyan');
+    };
+
+    if (parsed.partnerReply) {
+      parsed.partnerReply = sanitizeSrananText(parsed.partnerReply);
+    }
+    if (parsed.extractedVocab && Array.isArray(parsed.extractedVocab)) {
+      parsed.extractedVocab.forEach((v: any) => {
+        if (v.word) v.word = sanitizeSrananText(v.word);
+        if (v.contextSentence) v.contextSentence = sanitizeSrananText(v.contextSentence);
+      });
+    }
+    if (parsed.corrections && Array.isArray(parsed.corrections)) {
+      parsed.corrections.forEach((c: any) => {
+        if (c.suggestedText) c.suggestedText = sanitizeSrananText(c.suggestedText);
+      });
+    }
+
+    // Attach Grounding Metadata to response using retrieved RAG snippets
+    const responseSnippets = groundedSnippets.slice(0, 5);
+
     res.json({
       ...parsed,
       groundingMetadata: {
-        ragEnabled: useRag,
-        sourcesCount: groundedSnippets.length,
-        groundedSnippets
+        ragEnabled: useRag && responseSnippets.length > 0,
+        sourcesCount: responseSnippets.length,
+        groundedSnippets: responseSnippets
       }
     });
   } catch (error: any) {
@@ -393,18 +518,18 @@ app.post('/api/rag/corpus/deduplicate', async (req, res) => {
   }
 });
 
-// POST /api/rag/generate-from-markdown - Generate RAG bulk text from Markdown files using Gemini
-app.post('/api/rag/generate-from-markdown', async (req, res) => {
+// POST /api/rag/generate-from-markdown & generate-from-document - Generate RAG bulk text from PDF, Markdown or Text files using Gemini
+app.post('/api/rag/generate-from-document', async (req, res) => {
   try {
-    const { markdownContent } = req.body;
-    if (!markdownContent || typeof markdownContent !== 'string' || !markdownContent.trim()) {
-      return res.status(400).json({ error: 'Geen markdown content opgegeven.' });
+    const { markdownContent, pdfFiles } = req.body;
+    if ((!markdownContent || typeof markdownContent !== 'string' || !markdownContent.trim()) && (!pdfFiles || !Array.isArray(pdfFiles) || pdfFiles.length === 0)) {
+      return res.status(400).json({ error: 'Geen document, markdown of PDF opgegeven.' });
     }
 
     const ai = getGenAI();
 
     const systemInstruction = `You are an expert Sranantongo language parser and lexicographer.
-Read the provided Markdown document(s) carefully and extract all authentic Sranantongo phrases, expressions, vocabulary, proverbs (odo's), grammar structures, and dialogues.
+Read the provided document(s) (PDF files, Markdown, or text) carefully and extract ALL authentic Sranantongo phrases, vocabulary, dictionary entries, expressions, proverbs (odo's), grammar structures, and dialogues.
 
 Format the output STRICTLY using the line-by-line format below (without any markdown headings, numbering, or introductory chatter):
 
@@ -438,10 +563,33 @@ CRITICAL CONSTRAINTS:
 - DO NOT output conversational filler like "Here is the formatted list:" or "Sure!".
 - Every single line MUST follow the exact "Sranantongo Phrase : English Translation, Category: [category]" pattern.`;
 
+    const contents: any[] = [];
+
+    if (pdfFiles && Array.isArray(pdfFiles)) {
+      for (const pdf of pdfFiles) {
+        if (pdf.base64) {
+          const cleanBase64 = pdf.base64.includes(',') ? pdf.base64.split(',')[1] : pdf.base64;
+          contents.push({
+            inlineData: {
+              mimeType: 'application/pdf',
+              data: cleanBase64
+            }
+          });
+        }
+      }
+    }
+
+    let userPromptText = 'Extract all Sranantongo-English dictionary entries, phrases, and vocabulary from the provided document(s).';
+    if (markdownContent && typeof markdownContent === 'string' && markdownContent.trim()) {
+      userPromptText += `\n\nMarkdown/Text content:\n${markdownContent}`;
+    }
+
+    contents.push(userPromptText);
+
     const response = await callWithRetry(() =>
       ai.models.generateContent({
         model: 'gemini-3.6-flash',
-        contents: `Markdown Content to extract Sranantongo RAG pairs from:\n\n${markdownContent}`,
+        contents,
         config: {
           systemInstruction,
           temperature: 0.2
@@ -450,7 +598,6 @@ CRITICAL CONSTRAINTS:
     );
 
     let generatedText = (response.text || '').trim();
-    // Clean up any accidental code fence wrappers if present
     generatedText = generatedText.replace(/^```[a-z]*\n?/i, '').replace(/\n?```$/i, '').trim();
 
     res.json({
@@ -458,9 +605,15 @@ CRITICAL CONSTRAINTS:
       generatedText
     });
   } catch (err: any) {
-    console.error('Error generating RAG text from markdown:', err);
-    res.status(500).json({ error: 'Fout bij het genereren van RAG-tekst vanuit markdown.', details: err?.message });
+    console.error('Error generating RAG text from document/PDF:', err);
+    res.status(500).json({ error: 'Fout bij het genereren van RAG-tekst vanuit document/PDF.', details: err?.message });
   }
+});
+
+app.post('/api/rag/generate-from-markdown', async (req, res) => {
+  // Alias for backward compatibility
+  req.url = '/api/rag/generate-from-document';
+  return app._router.handle(req, res, () => {});
 });
 
 // DELETE /api/rag/corpus/:id - Delete a specific corpus item
@@ -631,8 +784,8 @@ Tasks:
 
     let contentsPayload: any[];
     if (audioBase64) {
-      const cleanBase64 = audioBase64.replace(/^data:audio\/[a-z0-9]+;base64,/, '');
-      const audioMime = mimeType ? mimeType.split(';')[0] : 'audio/webm';
+      const cleanBase64 = audioBase64.includes(',') ? audioBase64.split(',')[1] : audioBase64;
+      const audioMime = mimeType ? mimeType.split(';')[0].trim() : 'audio/webm';
       contentsPayload = [
         {
           inlineData: {
@@ -709,13 +862,40 @@ Tasks:
   }
 });
 
-// 3. Hints Generator Endpoint
+// 3. Hints Generator Endpoint with RAG Grounding
 app.post('/api/hints', async (req, res) => {
   try {
-    const { messages, scenario, targetLanguage, level } = req.body;
+    const { messages, scenario, targetLanguage, level, enableRag } = req.body;
     const ai = getGenAI();
 
+    const isSranan = targetLanguage === 'sr' || targetLanguage === 'Sranantongo' || targetLanguage?.toLowerCase().includes('sranan');
+
+    const lastUserMessage = (messages || [])
+      .slice()
+      .reverse()
+      .find((m: any) => m.sender === 'user')?.text || '';
+
+    const combinedRagQuery = `${lastUserMessage} ${scenario?.title || ''} ${scenario?.description || ''}`.trim();
+
+    const useRag = (enableRag !== undefined ? enableRag : isRagGlobalEnabled) && isSranan;
+    const groundedSnippets = useRag ? searchCorpus(combinedRagQuery || 'Fa waka', activeCorpus, 10) : [];
+    const ragGroundingInstructions = useRag && groundedSnippets.length > 0
+      ? formatGroundingPrompt(groundedSnippets)
+      : '';
+
     const conversationHistory = (messages || []).map((m: any) => `${m.sender.toUpperCase()}: ${m.text}`).join('\n');
+
+    const systemInstruction = `You are a Sranantongo language tutor generating suggested responses (hints) for a learner.
+Target Language: ${targetLanguage || 'Sranantongo'}
+Learner Level: ${level || 'A2'}
+Scenario Title: ${scenario?.title || 'Casual Chat'}
+
+STRICT RAG GROUNDING & LOW-RESOURCE LANGUAGE MANDATE:
+- Sranantongo is a Low-Resource Language. You MUST ONLY use authentic Sranantongo vocabulary and expressions directly grounded in the RAG Knowledge Base context provided below or standard verified Sranantongo dictionary entries.
+- ABSOLUTELY NO INVENTED WORDS OR PSEUDO-COMPOUNDS (e.g., NEVER suggest fake words like "kewti" or "koto watra"). For cold water, suggest "koudi watra" or "kold watra".
+- All 3 hint options MUST be 100% authentic Sranantongo.
+
+${ragGroundingInstructions}`;
 
     const prompt = `Conversation history:\n${conversationHistory}\n\nProvide 3 distinct options of what the learner (${level || 'A2'} level) could say next in ${targetLanguage || 'Sranantongo'} to continue the dialogue naturally. Format as JSON.`;
 
@@ -724,6 +904,8 @@ app.post('/api/hints', async (req, res) => {
         model: 'gemini-3.6-flash',
         contents: prompt,
         config: {
+          systemInstruction,
+          temperature: 0.0,
           responseMimeType: 'application/json',
           responseSchema: {
             type: Type.OBJECT,
@@ -747,7 +929,67 @@ app.post('/api/hints', async (req, res) => {
       })
     );
 
-    res.json(JSON.parse(response.text || '{"hints":[]}'));
+    const resultObj = JSON.parse(response.text || '{"hints":[]}');
+
+    if (isSranan && resultObj.hints && Array.isArray(resultObj.hints)) {
+      const vocabSet = extractCorpusVocabularySet(activeCorpus);
+      const verifiedHints: any[] = [];
+
+      for (const hint of resultObj.hints) {
+        const ungroundedInHint = findUngroundedWords(hint.text || '', vocabSet);
+        if (ungroundedInHint.length > 0) {
+          console.log(`[RAG Filter] Hint contains ungrounded word(s) [${ungroundedInHint.join(', ')}]. Filtering...`);
+          try {
+            const rephraseHintPrompt = `Rephrase this Sranantongo hint so that EVERY WORD is authentic and verified in the RAG corpus:
+Original: "${hint.text}"
+
+RAG GROUNDING CONTEXT:
+${ragGroundingInstructions || formatGroundingPrompt(groundedSnippets)}
+
+Return JSON:
+{
+  "text": "Rephrased Sranantongo hint using ONLY grounded terms",
+  "translation": "Updated English translation",
+  "tone": "${hint.tone || 'casual'}"
+}`;
+
+            const rephraseHintRes = await callWithRetry(() =>
+              ai.models.generateContent({
+                model: 'gemini-3.6-flash',
+                contents: rephraseHintPrompt,
+                config: {
+                  temperature: 0.0,
+                  responseMimeType: 'application/json',
+                  responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                      text: { type: Type.STRING },
+                      translation: { type: Type.STRING },
+                      tone: { type: Type.STRING }
+                    },
+                    required: ['text', 'translation', 'tone']
+                  }
+                }
+              })
+            );
+            const rephrasedHint = JSON.parse(rephraseHintRes.text || '{}');
+            if (rephrasedHint.text) {
+              verifiedHints.push(rephrasedHint);
+            }
+          } catch (e) {
+            console.error('[RAG Filter] Hint rephrase error:', e);
+          }
+        } else {
+          verifiedHints.push(hint);
+        }
+      }
+
+      if (verifiedHints.length > 0) {
+        resultObj.hints = verifiedHints;
+      }
+    }
+
+    res.json(resultObj);
   } catch (error: any) {
     console.error('Error in /api/hints:', error);
     res.status(500).json({ hints: [] });
@@ -823,14 +1065,46 @@ app.post('/api/tts', async (req, res) => {
 
     const selectedVoice = voiceName || 'Puck';
 
-    // MD5 Hashing Server-Side Audio Caching
-    const hashInput = `${textToSpeak.trim().toLowerCase()}_${selectedVoice}`;
+    // Build dynamic pronunciation guidance from corpus and standard Sranantongo phonetic rules
+    const srananPhoneticRules = [
+      '- "dringi": pronounce strictly as "dring-ee" with a smooth nasal "ng" sound (as in "sing"), NEVER with a hard "k" or "nk" sound.',
+      '- "tangi": pronounce as "tahn-gee" with a smooth nasal "ng" sound, no hard "k".',
+      '- "singi": pronounce as "sing-ee" with a smooth nasal "ng" sound, no hard "k".',
+      '- "manga" / "nanga": pronounce with a smooth nasal "ng" sound.',
+      '- "alesi": pronounce as "ah-lay-see".',
+      '- "moksi": pronounce as "mok-see".',
+      '- "switi": pronounce as "swee-tee".',
+      '- "bun": pronounce as "boon".',
+      '- "nyan" / "njanyan": pronounce "ny" as in Spanish "ñ" / "nyan".',
+      '- "watra": pronounce as "wah-trah".',
+      '- "kold": pronounce as "kold".',
+      '- "faya": pronounce as "fah-yah".',
+      '- "sranan" / "sranantongo": pronounce as "srah-nahn" / "srah-nahn-tong-go".'
+    ];
+
+    // Find any matching phonetic guides from activeCorpus for words in textToSpeak
+    const wordsInText = textToSpeak.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/);
+    const matchedCorpusPhonetics: string[] = [];
+
+    activeCorpus.forEach((item) => {
+      if (item.srananText && item.phonetic) {
+        const itemWord = item.srananText.toLowerCase().trim();
+        if (wordsInText.includes(itemWord) || textToSpeak.toLowerCase().includes(itemWord)) {
+          matchedCorpusPhonetics.push(`- "${item.srananText}": pronounced [${item.phonetic}]`);
+        }
+      }
+    });
+
+    const combinedPhoneticNotes = Array.from(new Set([...srananPhoneticRules, ...matchedCorpusPhonetics])).join('\n');
+
+    // MD5 Hashing Server-Side Audio Caching (v3 key forces regeneration with enhanced phonetic Director's Notes)
+    const hashInput = `v3_sranan_tts_${textToSpeak.trim().toLowerCase()}_${selectedVoice}`;
     const hash = crypto.createHash('md5').update(hashInput).digest('hex');
 
     const wavCachePath = path.join(publicAudioCacheDir, `${hash}.wav`);
     const mp3CachePath = path.join(publicAudioCacheDir, `${hash}.mp3`);
 
-    // Return cached audio immediately if available
+    // Return cached audio immediately if available on local disk
     if (fs.existsSync(wavCachePath)) {
       const cachedBuffer = fs.readFileSync(wavCachePath);
       return res.json({
@@ -851,12 +1125,45 @@ app.post('/api/tts', async (req, res) => {
       });
     }
 
+    // Check Cloud Firestore persistent cache if not present on local disk
+    const cloudRecord = await getTTSAudioFromFirestore(hash).catch((err) => {
+      console.error('Error querying Cloud Firestore TTS cache:', err);
+      return null;
+    });
+
+    if (cloudRecord && cloudRecord.audioBase64) {
+      const ext = cloudRecord.mimeType === 'audio/mp3' ? 'mp3' : 'wav';
+      const cacheFilePath = path.join(publicAudioCacheDir, `${hash}.${ext}`);
+
+      // Save to local disk so future requests in the current session hit disk instantly
+      try {
+        if (!fs.existsSync(publicAudioCacheDir)) {
+          fs.mkdirSync(publicAudioCacheDir, { recursive: true });
+        }
+        const audioBuf = Buffer.from(cloudRecord.audioBase64, 'base64');
+        fs.writeFileSync(cacheFilePath, audioBuf);
+      } catch (e) {
+        console.error('Failed to save Firestore cached audio to local disk:', e);
+      }
+
+      console.log(`[TTS Cache Hit] Retrieved audio [${hash}] from persistent Cloud Firestore.`);
+
+      return res.json({
+        audioUrl: `/audio-cache/${hash}.${ext}`,
+        audioBase64: cloudRecord.audioBase64,
+        mimeType: cloudRecord.mimeType || 'audio/wav',
+        provider: 'firestore-audio-cache'
+      });
+    }
+
     // Call Gemini 3.1 Flash TTS model strictly with official prompt structure
     const fullPrompt = `### AUDIO PROFILE
-Native Sranantongo speaker.
+Native Sranantongo speaker from Suriname.
 
 ### DIRECTOR'S NOTES
-Surinamese accent, Creole staccato rhythm, clear pacing.
+Authentic Surinamese accent, melodic Creole cadence, open vowels, clear pacing.
+STRICT PRONUNCIATION GUIDANCE FOR SRANANTONGO:
+${combinedPhoneticNotes}
 
 #### TRANSCRIPT
 ${textToSpeak}`;
@@ -936,9 +1243,22 @@ ${textToSpeak}`;
       const cacheFilePath = path.join(publicAudioCacheDir, `${hash}.${ext}`);
       fs.writeFileSync(cacheFilePath, finalBuffer);
 
+      const base64Str = finalBuffer.toString('base64');
+
+      // Asynchronously persist to Cloud Firestore database for permanent storage across container restarts
+      saveTTSAudioToFirestore({
+        id: hash,
+        hash,
+        text: textToSpeak,
+        voiceName: selectedVoice,
+        audioBase64: base64Str,
+        mimeType: finalMimeType,
+        createdAt: new Date().toISOString()
+      }).catch((err) => console.error('Error saving to Cloud Firestore TTS cache:', err));
+
       return res.json({
         audioUrl: `/audio-cache/${hash}.${ext}`,
-        audioBase64: finalBuffer.toString('base64'),
+        audioBase64: base64Str,
         mimeType: finalMimeType,
         provider: 'gemini-3.1-flash-tts-preview'
       });

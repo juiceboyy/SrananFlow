@@ -62,6 +62,7 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({
 
   // Flashcards SRS state
   const [flashcardDeckFilter, setFlashcardDeckFilter] = useState<'learning' | 'new' | 'all' | 'mastered'>('learning');
+  const [sessionCards, setSessionCards] = useState<VocabItem[]>([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [autoPlayAudio, setAutoPlayAudio] = useState(true);
@@ -96,21 +97,21 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({
     return matchesStatus && matchesSearch;
   });
 
-  // Deck items for SRS Flashcards
-  const flashcardsDeck = langItems.filter((item) => {
-    if (flashcardDeckFilter === 'learning') return item.status === 'learning';
-    if (flashcardDeckFilter === 'new') return item.status === 'new';
-    if (flashcardDeckFilter === 'mastered') return item.status === 'mastered';
-    return true; // 'all'
-  });
-
   const learningCount = langItems.filter((i) => i.status === 'learning').length;
   const newCount = langItems.filter((i) => i.status === 'new').length;
   const masteredCount = langItems.filter((i) => i.status === 'mastered').length;
 
-  // Reset flashcards session
+  // Start or reset flashcards session with a stable snapshot of cards
   const startFlashcardSession = (filter: 'learning' | 'new' | 'all' | 'mastered') => {
+    const deck = langItems.filter((item) => {
+      if (filter === 'learning') return item.status === 'learning';
+      if (filter === 'new') return item.status === 'new';
+      if (filter === 'mastered') return item.status === 'mastered';
+      return true; // 'all'
+    });
+
     setFlashcardDeckFilter(filter);
+    setSessionCards(deck);
     setCurrentCardIndex(0);
     setIsFlipped(false);
     setSessionCompleted(false);
@@ -123,6 +124,13 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({
       xpEarned: 0
     });
   };
+
+  // Sync session cards when entering flashcards view or changing language if deck empty
+  useEffect(() => {
+    if (activeTab === 'flashcards' && sessionCards.length === 0 && !sessionCompleted) {
+      startFlashcardSession(flashcardDeckFilter);
+    }
+  }, [activeTab, targetLanguage, langItems]);
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,16 +165,17 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({
 
   // Keyboard navigation for flashcards
   useEffect(() => {
-    if (activeTab !== 'flashcards' || sessionCompleted || flashcardsDeck.length === 0) return;
+    if (activeTab !== 'flashcards' || sessionCompleted || sessionCards.length === 0) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Space' || e.key === 'Enter') {
         e.preventDefault();
         setIsFlipped((prev) => {
           const nextState = !prev;
-          if (nextState && autoPlayAudio && flashcardsDeck[currentCardIndex]) {
+          const currentCard = sessionCards[currentCardIndex];
+          if (nextState && autoPlayAudio && currentCard) {
             playAudioForText(
-              flashcardsDeck[currentCardIndex].word,
+              currentCard.word,
               targetLanguage,
               currentLang.defaultVoice
             );
@@ -192,11 +201,11 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeTab, isFlipped, currentCardIndex, flashcardsDeck, sessionCompleted, autoPlayAudio, targetLanguage]);
+  }, [activeTab, isFlipped, currentCardIndex, sessionCards, sessionCompleted, autoPlayAudio, targetLanguage]);
 
   // Spaced Repetition Rating Handler
   const handleRateFlashcard = (rating: 'again' | 'hard' | 'good' | 'easy') => {
-    const card = flashcardsDeck[currentCardIndex];
+    const card = sessionCards[currentCardIndex];
     if (!card) return;
 
     const todayStr = new Date().toISOString().split('T')[0];
@@ -236,6 +245,15 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({
       onUpdateStatus(card.id, newStatus);
     }
 
+    // Keep sessionCards array stable so currentCardIndex stays in bounds during the review session
+    setSessionCards((prev) => {
+      const next = [...prev];
+      if (next[currentCardIndex]) {
+        next[currentCardIndex] = updatedItem;
+      }
+      return next;
+    });
+
     // Record activity XP
     const xpGained = 5;
     onRecordActivity(xpGained, 0.4);
@@ -252,7 +270,7 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({
 
     setIsFlipped(false);
 
-    if (currentCardIndex < flashcardsDeck.length - 1) {
+    if (currentCardIndex < sessionCards.length - 1) {
       setCurrentCardIndex((prev) => prev + 1);
     } else {
       setSessionCompleted(true);
@@ -582,7 +600,7 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({
                 </button>
               </div>
             </div>
-          ) : flashcardsDeck.length === 0 ? (
+          ) : sessionCards.length === 0 ? (
             /* Empty Queue State */
             <div className="bg-white border border-[#E8E8DF] rounded-[32px] p-10 text-center space-y-4 shadow-xs">
               <Brain className="w-10 h-10 text-[#808070] mx-auto" />
@@ -621,7 +639,7 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({
               <div className="flex items-center justify-between text-xs font-bold text-[#808070]">
                 <div className="flex items-center gap-2">
                   <span className="bg-[#E5EADD] text-[#5A5A40] px-2.5 py-1 rounded-full text-[11px]">
-                    Card {currentCardIndex + 1} of {flashcardsDeck.length}
+                    Card {Math.min(currentCardIndex + 1, sessionCards.length)} of {sessionCards.length}
                   </span>
                   <span className="text-[11px] text-[#808070] hidden sm:inline">
                     SRS Spaced Repetition Practice
@@ -639,7 +657,7 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({
                 <div
                   className="bg-[#5A5A40] h-full transition-all duration-300"
                   style={{
-                    width: `${((currentCardIndex) / flashcardsDeck.length) * 100}%`
+                    width: `${((currentCardIndex) / Math.max(1, sessionCards.length)) * 100}%`
                   }}
                 />
               </div>
@@ -648,9 +666,10 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({
               <div
                 onClick={() => {
                   setIsFlipped(!isFlipped);
-                  if (!isFlipped && autoPlayAudio && flashcardsDeck[currentCardIndex]) {
+                  const card = sessionCards[currentCardIndex];
+                  if (!isFlipped && autoPlayAudio && card) {
                     playAudioForText(
-                      flashcardsDeck[currentCardIndex].word,
+                      card.word,
                       targetLanguage,
                       currentLang.defaultVoice
                     );
@@ -664,14 +683,14 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({
                 <div className="absolute top-4 left-4 flex items-center gap-2">
                   <span
                     className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider border ${
-                      flashcardsDeck[currentCardIndex]?.status === 'learning'
+                      sessionCards[currentCardIndex]?.status === 'learning'
                         ? 'bg-amber-100 text-amber-900 border-amber-300'
-                        : flashcardsDeck[currentCardIndex]?.status === 'mastered'
+                        : sessionCards[currentCardIndex]?.status === 'mastered'
                         ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
                         : 'bg-slate-100 text-slate-800 border-slate-300'
                     }`}
                   >
-                    {flashcardsDeck[currentCardIndex]?.status === 'learning' ? 'Learning (SRS)' : flashcardsDeck[currentCardIndex]?.status}
+                    {sessionCards[currentCardIndex]?.status === 'learning' ? 'Learning (SRS)' : (sessionCards[currentCardIndex]?.status || 'Learning')}
                   </span>
                 </div>
 
@@ -679,11 +698,14 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    playAudioForText(
-                      flashcardsDeck[currentCardIndex].word,
-                      targetLanguage,
-                      currentLang.defaultVoice
-                    );
+                    const card = sessionCards[currentCardIndex];
+                    if (card) {
+                      playAudioForText(
+                        card.word,
+                        targetLanguage,
+                        currentLang.defaultVoice
+                      );
+                    }
                   }}
                   className="absolute top-4 right-4 p-2.5 bg-[#F5F5F0] hover:bg-[#E5EADD] rounded-full text-[#5A5A40] transition-colors border border-[#E0E0D5]"
                   title="Listen to pronunciation"
@@ -698,11 +720,13 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({
                       Target Phrase ({currentLang.name})
                     </span>
                     <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#2C2C24]">
-                      {flashcardsDeck[currentCardIndex]?.word}
+                      {sessionCards[currentCardIndex]?.word || '—'}
                     </h2>
-                    <p className="text-sm text-[#5A5A40] italic font-semibold">
-                      [{flashcardsDeck[currentCardIndex]?.phonetic}]
-                    </p>
+                    {sessionCards[currentCardIndex]?.phonetic && (
+                      <p className="text-sm text-[#5A5A40] italic font-semibold">
+                        [{sessionCards[currentCardIndex]?.phonetic}]
+                      </p>
+                    )}
                     <div className="pt-4 text-xs text-[#808070] font-medium inline-flex items-center gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
                       <span>Click card to reveal translation</span>
                     </div>
@@ -713,14 +737,14 @@ export const VocabularyView: React.FC<VocabularyViewProps> = ({
                       English Translation
                     </span>
                     <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#2C2C24]">
-                      {flashcardsDeck[currentCardIndex]?.translation}
+                      {sessionCards[currentCardIndex]?.translation || '—'}
                     </h3>
 
-                    {flashcardsDeck[currentCardIndex]?.exampleSentence && (
+                    {sessionCards[currentCardIndex]?.exampleSentence && (
                       <div className="p-3 bg-white/80 rounded-2xl border border-[#E8E8DF] text-xs text-[#5A5A40] italic space-y-1">
-                        <p className="font-semibold text-[#2C2C24]">"{flashcardsDeck[currentCardIndex]?.exampleSentence}"</p>
-                        {flashcardsDeck[currentCardIndex]?.exampleTranslation && (
-                          <p className="text-[#808070]">({flashcardsDeck[currentCardIndex]?.exampleTranslation})</p>
+                        <p className="font-semibold text-[#2C2C24]">"{sessionCards[currentCardIndex]?.exampleSentence}"</p>
+                        {sessionCards[currentCardIndex]?.exampleTranslation && (
+                          <p className="text-[#808070]">({sessionCards[currentCardIndex]?.exampleTranslation})</p>
                         )}
                       </div>
                     )}

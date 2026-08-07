@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import fs from 'fs';
 import path from 'path';
 import { RAGCorpusItem } from '../types';
@@ -167,4 +167,59 @@ async function seedDefaultCorpus(firestore: ReturnType<typeof getFirestore>) {
   });
   await batch.commit();
   console.log('Seeded Cloud Firestore with authentic Sranantongo corpus items.');
+}
+
+const TTS_COLLECTION_NAME = 'ttsCache';
+
+export interface TTSCacheRecord {
+  id: string;
+  hash: string;
+  text: string;
+  voiceName: string;
+  audioBase64: string;
+  mimeType: string;
+  createdAt: string;
+}
+
+/**
+ * Retrieve TTS audio record from Cloud Firestore cache by hash.
+ */
+export async function getTTSAudioFromFirestore(hash: string): Promise<TTSCacheRecord | null> {
+  const firestore = getFirestoreDB();
+  if (!firestore) return null;
+
+  try {
+    const docRef = doc(firestore, TTS_COLLECTION_NAME, hash);
+    const snapshot = await getDoc(docRef);
+    if (snapshot.exists()) {
+      return snapshot.data() as TTSCacheRecord;
+    }
+  } catch (err) {
+    console.error('Error fetching TTS item from Cloud Firestore cache:', err);
+  }
+  return null;
+}
+
+/**
+ * Save TTS audio record to Cloud Firestore cache.
+ */
+export async function saveTTSAudioToFirestore(record: TTSCacheRecord): Promise<boolean> {
+  const firestore = getFirestoreDB();
+  if (!firestore) return false;
+
+  try {
+    // Check size limit: Firestore document size limit is ~1MB.
+    // Ensure base64 string is under 950,000 chars to avoid exceeding 1MB payload.
+    if (record.audioBase64.length > 950000) {
+      console.warn(`[Firestore TTS Cache] Audio payload too large (${record.audioBase64.length} chars) for Firestore document, skipping cloud sync.`);
+      return false;
+    }
+    const docRef = doc(firestore, TTS_COLLECTION_NAME, record.hash);
+    await setDoc(docRef, record, { merge: true });
+    console.log(`[Firestore TTS Cache] Successfully saved audio [${record.hash}] (${Math.round(record.audioBase64.length / 1024)} KB) to Cloud Firestore.`);
+    return true;
+  } catch (err) {
+    console.error('Error saving TTS item to Cloud Firestore cache:', err);
+    return false;
+  }
 }

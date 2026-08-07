@@ -75,22 +75,19 @@ export function calculateSimilarityScore(
 export function searchCorpus(
   query: string,
   corpus: RAGCorpusItem[],
-  maxResults = 4,
+  maxResults = 5,
   categoryFilter?: string
 ): GroundedSnippet[] {
   if (!query || !query.trim()) {
-    // Return top proverb and top dictionary items as general fallback context
-    return corpus
-      .slice(0, maxResults)
-      .map((item) => ({
-        id: item.id,
-        title: item.title,
-        category: item.category,
-        srananText: item.srananText,
-        translation: item.translation,
-        phonetic: item.phonetic,
-        similarityScore: 50
-      }));
+    return corpus.slice(0, maxResults).map((item) => ({
+      id: item.id,
+      title: item.title,
+      category: item.category,
+      srananText: item.srananText,
+      translation: item.translation,
+      phonetic: item.phonetic,
+      similarityScore: 40
+    }));
   }
 
   const filtered = categoryFilter && categoryFilter !== 'all'
@@ -109,18 +106,19 @@ export function searchCorpus(
   // Sort descending by score
   scored.sort((a, b) => b.score - a.score);
 
-  // Take top items with score > 10, or if none, fallback top 2
-  const topMatches = scored.filter((s) => s.score > 10).slice(0, maxResults);
+  // Take top items with score >= 10
+  const topMatches = scored.filter((s) => s.score >= 10).slice(0, maxResults);
 
   if (topMatches.length === 0) {
-    return scored.slice(0, Math.min(2, maxResults)).map((s) => ({
+    // If no keyword match > 10, return top dictionary/grammar entries as fallback grounding context
+    return scored.slice(0, Math.min(3, maxResults)).map((s) => ({
       id: s.item.id,
       title: s.item.title,
       category: s.item.category,
       srananText: s.item.srananText,
       translation: s.item.translation,
       phonetic: s.item.phonetic,
-      similarityScore: Math.max(20, s.score)
+      similarityScore: 35
     }));
   }
 
@@ -133,6 +131,61 @@ export function searchCorpus(
     phonetic: s.item.phonetic,
     similarityScore: Math.max(35, s.score)
   }));
+}
+
+/**
+  Filters grounding snippets down to ONLY those whose vocabulary or terms are actually present in the generated Sranantongo reply or user query.
+ */
+export function filterSnippetsToActualUsage(
+  replyText: string,
+  userQuery: string,
+  snippets: GroundedSnippet[],
+  corpus: RAGCorpusItem[]
+): GroundedSnippet[] {
+  if (!replyText || !replyText.trim()) return [];
+
+  const combinedText = `${replyText} ${userQuery}`.toLowerCase().replace(/[^\w\s\u00C0-\u024F]/g, ' ');
+  // Filter out short stop words (e.g., 'a', 'de', 'na', 'en', 'fu', 'yu', 'mi', 'wi')
+  const stopWords = new Set(['de', 'na', 'a', 'en', 'fu', 'yu', 'mi', 'wi', 'di', 'so', 'pe', 'fa', 'san', 'van', 'het', 'een', 'de']);
+  const tokens = Array.from(
+    new Set(
+      combinedText
+        .split(/\s+/)
+        .filter((t) => t.length >= 3 && !stopWords.has(t))
+    )
+  );
+
+  if (tokens.length === 0) return [];
+
+  // Match snippets that contain any of the significant content words in replyText or query
+  const matchingPool = snippets.length > 0 ? snippets : corpus.map((c) => ({
+    id: c.id,
+    title: c.title,
+    category: c.category,
+    srananText: c.srananText,
+    translation: c.translation,
+    phonetic: c.phonetic,
+    similarityScore: 50
+  }));
+
+  const verifiedUsedSnippets: GroundedSnippet[] = [];
+  const addedIds = new Set<string>();
+
+  for (const snippet of matchingPool) {
+    if (addedIds.has(snippet.id)) continue;
+
+    const srananLower = snippet.srananText.toLowerCase();
+    const titleLower = snippet.title.toLowerCase();
+
+    const matchesToken = tokens.some((token) => srananLower.includes(token) || titleLower.includes(token));
+
+    if (matchesToken) {
+      addedIds.add(snippet.id);
+      verifiedUsedSnippets.push(snippet);
+    }
+  }
+
+  return verifiedUsedSnippets.slice(0, 5);
 }
 
 export function formatGroundingPrompt(snippets: GroundedSnippet[]): string {
@@ -151,8 +204,14 @@ export function formatGroundingPrompt(snippets: GroundedSnippet[]): string {
 
   return `
 GROUNDING KNOWLEDGE BASE / RAG CONTEXT (AUTHENTIC SRANANTONGO CORPUS):
-The following authentic Sranantongo terminology, proverbs (odo's), grammar patterns, and phonetic stress guides were retrieved from the custom grounding corpus.
-YOU MUST PRIORITIZE USING THESE GROUNDED TERMS, PHONETIC GUIDES (WITH CAPITALIZED STRESS), AND PATTERNS OVER GENERIC GUESSES IN YOUR RESPONSE:
+The following authentic Sranantongo terminology, dictionary entries, proverbs (odo's), grammar patterns, and phonetic guides were retrieved from the custom grounding corpus.
+
+STRICT GROUNDING & LOW-RESOURCE LANGUAGE MANDATE:
+1. Sranantongo is a Low-Resource Language. You MUST ONLY use authentic, verified Sranantongo vocabulary and expressions that are directly grounded in the retrieved RAG Corpus entries below or standard verified Sranantongo lexicon.
+2. ABSOLUTELY NO INVENTED WORDS OR PSEUDO-COMPOUNDS (e.g., NEVER make up non-existent words like "kewti" or incorrect phrases like "koto watra"). For cold water, use "koudi watra" or "kold watra".
+3. When providing corrections or suggested responses (hints), verify that every word is authentic Sranantongo supported by the RAG corpus. Do NOT substitute user input with fake pseudo-words.
+
+RETRIEVED RAG CONTEXT:
 ${snippetsFormatted}
 `;
 }
@@ -570,4 +629,73 @@ export function groundScenarioWithRAG(
     groundedCount,
     groundedTerms: Array.from(groundedTermsSet)
   };
+}
+
+export const BASE_SRANAN_VOCAB = new Set([
+  'mi', 'yu', 'i', 'a', 'wi', 'unu', 'den', 'e', 'sa', 'ben', 'de', 'na', 'fu', 'nanga', 'ma',
+  'te', 'moro', 'disi', 'dati', 'wan', 'san', 'pe', 'fa', 'taki', 'tak', 'lobi', 'kon', 'go', 'gi',
+  'man', 'uma', 'pikin', 'tan', 'sidon', 'oso', 'nyan', 'njanyan', 'dringi', 'watra', 'switi', 'bun',
+  'tangi', 'odi', 'gran', 'mabon', 'mamanten', 'neti', 'bakadina', 'bika', 'bikasi', 'srefi', 'santi',
+  'prakseri', 'morfarse', 'morfarsu', 'no', 'ia', 'iya', 'kweti', 'koti', 'kowru', 'sranan', 'sranantongo',
+  'suriname', 'mooi', 'lanti', 'moni', 'presi', 'dya', 'dyaso', 'drape', 'so', 'doti', 'boko', 'kaba',
+  'eti', 'ha', 'ho', 'ahe', 'kwe', 'waka', 'meki', 'trow', 'wani', 'mu', 'musu', 'sabi', 'sab',
+  'yere', 'frei', 'firi', 'feti', 'tron', 'wroko', 'du', 'piki', 'pisi', 'suma', 'sani', 'tori',
+  'tu', 'dri', 'fo', 'feifi', 'siksi', 'sebi', 'agtu', 'agti', 'maba', 'neifi', 'tin', 'honderd',
+  'kold', 'faya', 'thee', 'koffie', 'melk', 'melki', 'merki', 'sukru', 'soet', 'rekening',
+  'bai', 'pai', 'srapo', 'boskopu', 'wenkel', 'markt', 'prani', 'srananman', 'sranan-uma', 'mati', 'bigi',
+  'danki', 'grantangi', 'fa-waka', 'kon-mabon', 'switi-kon', 'pe-a-presi-de', 'so-so', 'a-sani-disi',
+  'busi', 'libi', 'swit'
+]);
+
+export function extractCorpusVocabularySet(corpus: RAGCorpusItem[]): Set<string> {
+  const vocabSet = new Set<string>(BASE_SRANAN_VOCAB);
+
+  for (const item of corpus) {
+    if (item.srananText) {
+      const tokens = item.srananText
+        .toLowerCase()
+        .replace(/[^\w\s\u00C0-\u024F]/g, ' ')
+        .split(/\s+/)
+        .filter((t) => t.length > 0);
+      for (const t of tokens) {
+        vocabSet.add(t);
+      }
+    }
+    if (item.title) {
+      const tokens = item.title
+        .toLowerCase()
+        .replace(/[^\w\s\u00C0-\u024F]/g, ' ')
+        .split(/\s+/)
+        .filter((t) => t.length > 0);
+      for (const t of tokens) {
+        if (t.length > 1) vocabSet.add(t);
+      }
+    }
+    if (item.tags) {
+      for (const tag of item.tags) {
+        vocabSet.add(tag.toLowerCase());
+      }
+    }
+  }
+
+  return vocabSet;
+}
+
+export function findUngroundedWords(text: string, vocabSet: Set<string>): string[] {
+  if (!text || !text.trim()) return [];
+
+  const tokens = text
+    .toLowerCase()
+    .replace(/[^\w\s\u00C0-\u024F]/g, ' ')
+    .split(/\s+/)
+    .filter((t) => t.length > 1 && !/^\d+$/.test(t)); // Ignore single letters & numeric digits
+
+  const ungrounded: string[] = [];
+  for (const token of tokens) {
+    if (!vocabSet.has(token)) {
+      ungrounded.push(token);
+    }
+  }
+
+  return Array.from(new Set(ungrounded));
 }

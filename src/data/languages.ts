@@ -9,7 +9,7 @@ export const SUPPORTED_LANGUAGES: Language[] = [
     defaultVoice: 'Puck',
     commonGreeting: 'Fa waka! Fa yu tan tide?',
     samplePhrases: [
-      'Mi sa lobi wan koffie, asambresi.',
+      'Mi sa lobi wan koffie, grantangi.',
       'Pe a treinstasi de?',
       'A bun fu miti yu.',
       'Yu kan taki srabii pikinso?'

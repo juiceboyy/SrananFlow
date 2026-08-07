@@ -123,6 +123,9 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
   const [loadingHints, setLoadingHints] = useState(false);
   const [showHintsModal, setShowHintsModal] = useState(false);
 
+  // RAG Grounding sources expansion state
+  const [expandedSourcesMsgId, setExpandedSourcesMsgId] = useState<string | null>(null);
+
   // Added vocab state feedback
   const [addedWordsMap, setAddedWordsMap] = useState<Record<string, boolean>>({});
 
@@ -382,7 +385,8 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
           messages,
           scenario: activeScenario,
           targetLanguage: currentLang.name,
-          level: profile.level
+          level: profile.level,
+          enableRag: true
         })
       });
       const data = await response.json();
@@ -919,15 +923,53 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
 
                   {/* RAG Grounding Badge */}
                   {isPartner && msg.groundingMetadata && msg.groundingMetadata.ragEnabled && msg.groundingMetadata.sourcesCount > 0 && (
-                    <div className="mt-2 text-[11px] font-semibold text-[#4A6B44] bg-[#E8F0E6] border border-[#D0E0CC] px-2.5 py-1 rounded-lg flex items-center justify-between">
-                      <span className="flex items-center gap-1.5">
-                        <ShieldCheck className="w-3.5 h-3.5 text-[#4A6B44]" />
-                        <span>Grounded by Sranantongo RAG Corpus ({msg.groundingMetadata.sourcesCount} bronnen)</span>
-                      </span>
-                      {msg.groundingMetadata.groundedSnippets[0] && (
-                        <span className="text-[10px] text-[#557755] italic truncate max-w-[150px]">
-                          {msg.groundingMetadata.groundedSnippets[0].title}
+                    <div className="mt-2 text-[11px] text-[#4A6B44] bg-[#E8F0E6] border border-[#D0E0CC] rounded-lg overflow-hidden shadow-2xs">
+                      <button
+                        type="button"
+                        onClick={() => setExpandedSourcesMsgId(expandedSourcesMsgId === msg.id ? null : msg.id)}
+                        className="w-full px-2.5 py-1.5 font-semibold flex items-center justify-between hover:bg-[#DFEADB] transition-colors cursor-pointer text-left"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <ShieldCheck className="w-3.5 h-3.5 text-[#4A6B44] shrink-0" />
+                          <span>Grounded door Sranantongo RAG Kennisbank ({msg.groundingMetadata.sourcesCount} bronnen)</span>
                         </span>
+                        <span className="flex items-center gap-1 text-[10px] text-[#2F4F2A] font-bold underline shrink-0 ml-2">
+                          {expandedSourcesMsgId === msg.id ? (
+                            <>
+                              <span>Verberg bronnen</span>
+                              <ChevronUp className="w-3 h-3" />
+                            </>
+                          ) : (
+                            <>
+                              <span>Bekijk bronnen</span>
+                              <ChevronDown className="w-3 h-3" />
+                            </>
+                          )}
+                        </span>
+                      </button>
+
+                      {expandedSourcesMsgId === msg.id && (
+                        <div className="p-3 border-t border-[#D0E0CC] bg-[#F2F7F0] space-y-2 text-xs text-[#2A3F26] max-h-64 overflow-y-auto">
+                          <p className="font-bold text-[10px] uppercase tracking-wider text-[#4A6B44]">
+                            Geraadpleegde Kennisbank Items ({msg.groundingMetadata.groundedSnippets.length}):
+                          </p>
+                          <div className="space-y-2">
+                            {msg.groundingMetadata.groundedSnippets.map((snippet, sIdx) => (
+                              <div key={sIdx} className="p-2 bg-white rounded-md border border-[#D5E5D0] shadow-2xs">
+                                <div className="flex items-center justify-between gap-2 mb-1">
+                                  <span className="font-bold text-[#2E4A2A] text-[11px]">{snippet.title}</span>
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#E0EFE0] text-[#3D5C38] uppercase font-bold tracking-wide shrink-0">
+                                    {snippet.category}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] font-medium text-[#1E2D1B] whitespace-pre-line leading-relaxed">{snippet.srananText}</p>
+                                {snippet.translation && (
+                                  <p className="text-[10px] text-[#4F6A4A] italic mt-0.5">{snippet.translation}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
                   )}

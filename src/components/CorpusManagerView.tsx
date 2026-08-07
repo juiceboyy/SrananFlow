@@ -41,8 +41,9 @@ export function CorpusManagerView() {
   const [ragEnabled, setRagEnabled] = useState(true);
   const [totalWords, setTotalWords] = useState(0);
 
-  // Markdown Generator state
+  // Document / PDF & Markdown Generator state
   const [mdFiles, setMdFiles] = useState<{ name: string; content: string; size: number }[]>([]);
+  const [pdfFiles, setPdfFiles] = useState<{ name: string; base64: string; size: number }[]>([]);
   const [mdPastedContent, setMdPastedContent] = useState('');
   const [isGeneratingMd, setIsGeneratingMd] = useState(false);
   const [generatedRagText, setGeneratedRagText] = useState('');
@@ -118,28 +119,43 @@ export function CorpusManagerView() {
     fetchCorpus();
   }, []);
 
-  // Handle Markdown file uploads
-  const handleMdFilesSelected = (files: FileList | null) => {
+  // Handle PDF, Markdown and Text file uploads
+  const handleFilesSelected = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     const fileArray = Array.from(files);
 
     fileArray.forEach((file) => {
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result as string;
-        if (text) {
-          setMdFiles((prev) => [
-            ...prev.filter((f) => f.name !== file.name),
-            { name: file.name, content: text, size: file.size }
-          ]);
-        }
-      };
-      reader.readAsText(file);
+
+      if (isPdf) {
+        reader.onload = (e) => {
+          const result = e.target?.result as string;
+          if (result) {
+            setPdfFiles((prev) => [
+              ...prev.filter((f) => f.name !== file.name),
+              { name: file.name, base64: result, size: file.size }
+            ]);
+          }
+        };
+        reader.readAsDataURL(file);
+      } else {
+        reader.onload = (e) => {
+          const text = e.target?.result as string;
+          if (text) {
+            setMdFiles((prev) => [
+              ...prev.filter((f) => f.name !== file.name),
+              { name: file.name, content: text, size: file.size }
+            ]);
+          }
+        };
+        reader.readAsText(file);
+      }
     });
   };
 
-  // Generate RAG Bulk Text using Gemini API
-  const handleGenerateFromMarkdown = async () => {
+  // Generate RAG Bulk Text using Gemini API (Supports PDF, Markdown & Text)
+  const handleGenerateFromDocument = async () => {
     const combinedContent = [
       ...mdFiles.map((f) => `--- File: ${f.name} ---\n${f.content}`),
       mdPastedContent.trim() ? `--- Pasted Content ---\n${mdPastedContent}` : ''
@@ -147,15 +163,18 @@ export function CorpusManagerView() {
       .filter(Boolean)
       .join('\n\n');
 
-    if (!combinedContent.trim()) return;
+    if (!combinedContent.trim() && pdfFiles.length === 0) return;
 
     setIsGeneratingMd(true);
     setMdSuccessMsg(null);
     try {
-      const res = await fetch('/api/rag/generate-from-markdown', {
+      const res = await fetch('/api/rag/generate-from-document', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ markdownContent: combinedContent })
+        body: JSON.stringify({
+          markdownContent: combinedContent,
+          pdfFiles: pdfFiles.map((p) => ({ name: p.name, base64: p.base64 }))
+        })
       });
       if (res.ok) {
         const data = await res.json();
@@ -165,7 +184,8 @@ export function CorpusManagerView() {
         alert(errData.error || 'Genereren mislukt.');
       }
     } catch (err) {
-      console.error('Failed to generate from markdown:', err);
+      console.error('Failed to generate from document/PDF:', err);
+      alert('Fout bij het verbinden met de Gemini server.');
     } finally {
       setIsGeneratingMd(false);
     }
@@ -605,8 +625,8 @@ export function CorpusManagerView() {
               : 'border-transparent text-[#808070] hover:text-[#3A3A2F] hover:bg-white/50'
           }`}
         >
-          <FileCode className="w-4 h-4" />
-          <span>Markdown naar RAG Bulktekst</span>
+          <FileText className="w-4 h-4" />
+          <span>PDF & Document RAG Generator</span>
         </button>
 
         <button
@@ -800,19 +820,19 @@ export function CorpusManagerView() {
         </div>
       )}
 
-      {/* TAB: MARKDOWN TO RAG BULKTEXT GENERATOR */}
+      {/* TAB: PDF & MARKDOWN TO RAG BULKTEXT GENERATOR */}
       {activeTab === 'md-generator' && (
         <div className="bg-white border border-[#E0E0D5] rounded-2xl p-6 md:p-8 shadow-sm space-y-6">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E5EADD] text-[#5A5A40] text-xs font-bold uppercase tracking-wider">
-              <FileCode className="w-3.5 h-3.5" />
-              <span>Markdown naar RAG Bulktekst Generator</span>
+              <FileText className="w-3.5 h-3.5" />
+              <span>PDF & Document RAG Converter (via Gemini AI)</span>
             </div>
             <h3 className="text-xl font-bold font-serif text-[#3A3A2F]">
-              Automatisch RAG Bulktekst Genereren uit Markdown Bestanden
+              Automatisch RAG Bulktekst Genereren uit PDF Woordenboeken & Documenten
             </h3>
             <p className="text-sm text-[#666655] leading-relaxed max-w-3xl">
-              Sleep je Markdown (`.md`) bestanden hier naartoe of plak je tekst. Gemini analyseert de documenten en bouwt een gestructureerde RAG-bulktekst met de exacte syntaxis voor de Sranantongo RAG Knowledge Base.
+              Upload PDF-bestanden (zoals je Sranantongo-English dictionary PDF), Markdown (`.md`) of platte tekst (`.txt`). Gemini 3.6 Flash verwerkt het document direct en bouwt een gestructureerde RAG-bulktekst met de exacte syntaxis voor de Sranantongo Knowledge Base.
             </p>
           </div>
 
@@ -827,7 +847,7 @@ export function CorpusManagerView() {
               Pom : Traditional festive dish made with tayer root and chicken, Category: culture
             </code>
             <p className="text-[11px] text-[#707060] mt-1">
-              💡 Gemini analyseert de inhoud en deelt elk item automatisch in bij de juiste categorie (Grammatica, Cultuur, Spreekwoorden/Odo, Zinnen, Dialogen of Woordenboek).
+              💡 Gemini analyseert PDF's en tekstdocumenten en deelt elk item automatisch in bij de juiste categorie (Woordenboek, Grammatica, Cultuur, Spreekwoorden/Odo, Zinnen of Uitspraak).
             </p>
           </div>
 
@@ -841,7 +861,7 @@ export function CorpusManagerView() {
             onDrop={(e) => {
               e.preventDefault();
               setIsDragOver(false);
-              handleMdFilesSelected(e.dataTransfer.files);
+              handleFilesSelected(e.dataTransfer.files);
             }}
             className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
               isDragOver
@@ -852,49 +872,72 @@ export function CorpusManagerView() {
             <input
               type="file"
               multiple
-              accept=".md,.markdown,.txt"
-              onChange={(e) => handleMdFilesSelected(e.target.files)}
+              accept=".pdf,.md,.markdown,.txt"
+              onChange={(e) => handleFilesSelected(e.target.files)}
               className="hidden"
-              id="md-file-input"
+              id="doc-file-input"
             />
-            <label htmlFor="md-file-input" className="cursor-pointer space-y-3 block">
+            <label htmlFor="doc-file-input" className="cursor-pointer space-y-3 block">
               <div className="w-12 h-12 rounded-full bg-white text-[#5A5A40] border border-[#E0E0D5] flex items-center justify-center mx-auto shadow-xs">
                 <Upload className="w-6 h-6" />
               </div>
               <div>
                 <p className="text-sm font-bold text-[#3A3A2F]">
-                  Sleep `.md` bestanden hier naartoe, of <span className="text-[#5A5A40] underline font-extrabold">blader op je computer</span>
+                  Sleep `.pdf`, `.md` of `.txt` bestanden hier naartoe, of <span className="text-[#5A5A40] underline font-extrabold">blader op je computer</span>
                 </p>
                 <p className="text-xs text-[#808070] mt-1">
-                  Ondersteunt `.md`, `.markdown`, en `.txt` bestanden (meerdere bestanden toegestaan)
+                  Ondersteunt PDF-woordenboeken, Markdown en platte tekstbestanden (meerdere bestanden toegestaan)
                 </p>
               </div>
             </label>
           </div>
 
-          {/* Loaded Files List */}
-          {mdFiles.length > 0 && (
+          {/* Loaded PDF & Text Files List */}
+          {(pdfFiles.length > 0 || mdFiles.length > 0) && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-[#3A3A2F] uppercase tracking-wider">
-                  Geladen Markdown Bestanden ({mdFiles.length}):
+                  Geladen Documenten ({pdfFiles.length + mdFiles.length}):
                 </span>
                 <button
                   type="button"
-                  onClick={() => setMdFiles([])}
+                  onClick={() => {
+                    setMdFiles([]);
+                    setPdfFiles([]);
+                  }}
                   className="text-xs text-rose-600 hover:underline font-semibold cursor-pointer"
                 >
                   Wis alle bestanden
                 </button>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                {pdfFiles.map((file) => (
+                  <div
+                    key={file.name}
+                    className="flex items-center justify-between bg-amber-50/60 border border-amber-200/80 p-2.5 rounded-lg text-xs"
+                  >
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <FileText className="w-4 h-4 text-amber-800 shrink-0" />
+                      <span className="font-semibold text-amber-950 truncate">{file.name}</span>
+                      <span className="text-amber-800/80 shrink-0">({(file.size / 1024).toFixed(1)} KB)</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setPdfFiles((prev) => prev.filter((f) => f.name !== file.name))}
+                      className="text-amber-700 hover:text-rose-600 ml-2 cursor-pointer"
+                      title="Verwijder bestand"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
                 {mdFiles.map((file) => (
                   <div
                     key={file.name}
                     className="flex items-center justify-between bg-[#FAF9F5] border border-[#EAE8DE] p-2.5 rounded-lg text-xs"
                   >
                     <div className="flex items-center gap-2 overflow-hidden">
-                      <FileText className="w-4 h-4 text-[#5A5A40] shrink-0" />
+                      <FileCode className="w-4 h-4 text-[#5A5A40] shrink-0" />
                       <span className="font-semibold text-[#3A3A2F] truncate">{file.name}</span>
                       <span className="text-[#808070] shrink-0">({(file.size / 1024).toFixed(1)} KB)</span>
                     </div>
@@ -915,13 +958,13 @@ export function CorpusManagerView() {
           {/* Optional Direct Paste Textarea */}
           <div className="space-y-2">
             <label className="block text-xs font-bold text-[#3A3A2F] uppercase">
-              Of plak hier direct je Markdown Tekst:
+              Of plak hier aanvullende tekst of Markdown:
             </label>
             <textarea
-              rows={5}
+              rows={4}
               value={mdPastedContent}
               onChange={(e) => setMdPastedContent(e.target.value)}
-              placeholder="Plak hier je markdown tekst (bijv. # Sranantongo Woordenlijst...)"
+              placeholder="Plak hier je tekst (bijv. aanvullende woordenlijst of notities...)"
               className="w-full px-3.5 py-2.5 bg-[#F8F8F5] border border-[#E0E0D5] rounded-xl text-sm font-mono text-[#3A3A2F] focus:outline-none focus:ring-2 focus:ring-[#5A5A40]"
             />
           </div>
@@ -929,14 +972,14 @@ export function CorpusManagerView() {
           {/* Generate Button */}
           <div>
             <button
-              onClick={handleGenerateFromMarkdown}
-              disabled={isGeneratingMd || (mdFiles.length === 0 && !mdPastedContent.trim())}
+              onClick={handleGenerateFromDocument}
+              disabled={isGeneratingMd || (pdfFiles.length === 0 && mdFiles.length === 0 && !mdPastedContent.trim())}
               className="px-6 py-3 rounded-xl bg-[#5A5A40] text-white font-bold text-sm hover:bg-[#4A4A33] transition-all shadow-sm flex items-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               {isGeneratingMd ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Sranantongo RAG Bulktekst genereren via Gemini...</span>
+                  <span>PDF/Documenten analyseren en RAG Bulktekst genereren via Gemini...</span>
                 </>
               ) : (
                 <>

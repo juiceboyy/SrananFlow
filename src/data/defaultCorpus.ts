@@ -131,12 +131,34 @@ export const DEFAULT_SRANAN_CORPUS: RAGCorpusItem[] = [
     id: 'dict_06',
     title: 'Dictionary: Natural Greetings & Welcome Rules',
     category: 'dictionary',
-    srananText: 'Switi odi: A warm, pleasant greeting / hearty welcome\nWan switi kon: A warm welcome / Hearty arrival\nBun kon: Welcome!\nFa waka!: Hello! / How are you doing?\nRules: Never use "seryusu odi" for greetings or welcomes. In Sranantongo, "seryusu" means grave, solemn, or strict—not "warm" or "sincere". Use "switi odi", "wan switi kon", or "bun kon" instead.',
+    srananText: 'Switi odi: A warm, pleasant greeting / hearty welcome\nWan bigi odi: A warm, hearty greeting (e.g., "Wan bigi odi kon na Café Delicia")\nWan switi kon: A warm welcome / Hearty arrival\nBun kon: Welcome!\nFa waka!: Hello! / How are you doing?\nRules: Never use "seryusu odi" for greetings or welcomes. In Sranantongo, "seryusu" means grave, solemn, or strict—not "warm" or "sincere". Use "wan bigi odi", "switi odi", "wan switi kon", or "bun kon" instead.',
     translation: 'Authentic Sranantongo welcome and greeting rules.',
-    usageNotes: 'NEVER pair "seryusu" with "odi" or greetings. "Seryusu" means grave/strict. Use "switi odi", "wan switi kon", or "bun kon" for warm greetings.',
+    usageNotes: 'NEVER pair "seryusu" with "odi" or greetings. Use "wan bigi odi", "switi odi", "wan switi kon", or "bun kon".',
     tags: ['dictionary', 'greetings', 'etiquette', 'welcomes'],
     source: 'Sranantongo Lexicon & Usage Rules',
     dateAdded: '2026-08-06'
+  },
+  {
+    id: 'dict_07',
+    title: 'Dictionary: Kowru & Cold Water ( Kowru watra )',
+    category: 'dictionary',
+    srananText: 'Kowru: Cold / the cold / to cool down\nKowru watra: Cold water\nKowru dringi: Cold drink\nRules: Never use "koudi", "koudy", or "kewti watra" (these are AI hallucinations caused by forced Dutch suffixing of "koud"). Always use "kowru" for cold. "Koti watra" means to cross water/river.',
+    translation: 'Authentic Sranantongo term for cold and cold water.',
+    usageNotes: 'Strictly use "kowru" for cold. "Koudi" is an AI hallucination.',
+    tags: ['dictionary', 'drinks', 'temperature', 'kowru'],
+    source: 'SrananFlow Hallucinatie & Fouten-Checker',
+    dateAdded: '2026-08-07'
+  },
+  {
+    id: 'dict_08',
+    title: 'Dictionary: Food Ordering & Preferences (Sa wani fu nyan)',
+    category: 'dictionary',
+    srananText: 'Sa wani fu nyan: Would like to eat (e.g., "San yu sa wani fu nyan?")\nWani nyan / Wani dringi: Want to eat / Want to drink\nRules: Never use "lobi fu nyan" when asking what someone wants to eat or order. "Lobi" denotes deep romantic or personal affection/love, not a polite dining preference. Use "sa wani fu nyan" or "wani nyan".',
+    translation: 'Polite food and drink preference phrasing.',
+    usageNotes: 'Use "sa wani fu nyan" for polite ordering ("would like to eat"). Avoid "lobi fu nyan".',
+    tags: ['dictionary', 'food', 'dining', 'phrasing'],
+    source: 'SrananFlow Hallucinatie & Fouten-Checker',
+    dateAdded: '2026-08-07'
   },
   {
     id: 'dict_02',
