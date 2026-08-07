@@ -1,0 +1,8 @@
+{
+  "firestore": {
+    "databaseId": "ai-studio-lingoflowconvers-24c0600e-888b-45d5-93a9-3470d2e1bfdf",
+    "rules": "firestore.rules",
+    "edition": "ENTERPRISE",
+    "dataAccessMode": "FIRESTORE_NATIVE"
+  }
+}

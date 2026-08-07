@@ -1,6 +1,1 @@
-{
-  "name": "SrananFlow - Sranantongo AI Language Learning",
-  "description": "Interactive AI language learning application featuring real-time conversational partner, pronunciation & grammar feedback, vocabulary progress tracker, and gamified daily streak system.",
-  "requestFramePermissions": ["microphone"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
+{"name":"SrananFlow - Conversational AI Language Learning","description":"Interactive AI language learning application featuring real-time conversational partner, pronunciation \u0026 grammar feedback, vocabulary progress tracker, and gamified daily streak system.","requestFramePermissions":["microphone"],"majorCapabilities":["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]}
