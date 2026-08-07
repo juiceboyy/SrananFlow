@@ -34,8 +34,12 @@ app.use(express.json({ limit: '10mb' }));
 
 // Server-side audio cache directory setup
 const publicAudioCacheDir = path.join(process.cwd(), 'public', 'audio-cache');
-if (!fs.existsSync(publicAudioCacheDir)) {
-  fs.mkdirSync(publicAudioCacheDir, { recursive: true });
+try {
+  if (!fs.existsSync(publicAudioCacheDir)) {
+    fs.mkdirSync(publicAudioCacheDir, { recursive: true });
+  }
+} catch (e) {
+  // Ignored in read-only serverless environments like Netlify/Vercel
 }
 app.use('/audio-cache', express.static(publicAudioCacheDir));
 
@@ -1214,10 +1218,6 @@ ${textToSpeak}`;
     const base64Audio = audioPart?.inlineData?.data;
 
     if (base64Audio) {
-      if (!fs.existsSync(publicAudioCacheDir)) {
-        fs.mkdirSync(publicAudioCacheDir, { recursive: true });
-      }
-
       const rawBuffer = Buffer.from(base64Audio, 'base64');
       let finalBuffer: Buffer;
       let ext: string;
@@ -1240,8 +1240,15 @@ ${textToSpeak}`;
         finalMimeType = 'audio/wav';
       }
 
-      const cacheFilePath = path.join(publicAudioCacheDir, `${hash}.${ext}`);
-      fs.writeFileSync(cacheFilePath, finalBuffer);
+      try {
+        if (!fs.existsSync(publicAudioCacheDir)) {
+          fs.mkdirSync(publicAudioCacheDir, { recursive: true });
+        }
+        const cacheFilePath = path.join(publicAudioCacheDir, `${hash}.${ext}`);
+        fs.writeFileSync(cacheFilePath, finalBuffer);
+      } catch (fsErr) {
+        console.warn('Skipped local disk cache write in serverless environment:', fsErr);
+      }
 
       const base64Str = finalBuffer.toString('base64');
 
