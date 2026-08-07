@@ -243,15 +243,16 @@ export async function playAudioForText(
 
     if (response.ok) {
       const data = await response.json();
-      console.log(`[TTS Engine Used] Provider: ${data.provider || 'gemini-3.1-flash-tts-preview'}, Voice: ${voiceName || 'Puck'}, AudioURL: ${data.audioUrl || 'none'}`);
+      console.log(`[TTS Engine Used] Provider: ${data.provider || 'gemini-3.1-flash-tts-preview'}, Voice: ${voiceName || 'Puck'}`);
 
-      if (data.audioUrl) {
-        const played = await playAudioUrl(data.audioUrl);
+      // Try self-contained Base64 audio first (reliable in serverless environments)
+      if (data.audioBase64) {
+        const played = await playAudioBase64(data.audioBase64, data.mimeType || 'audio/wav');
         if (played) return true;
       }
 
-      if (data.audioBase64) {
-        const played = await playAudioBase64(data.audioBase64, data.mimeType || 'audio/wav');
+      if (data.audioUrl) {
+        const played = await playAudioUrl(data.audioUrl);
         if (played) return true;
       }
     } else {
@@ -262,8 +263,9 @@ export async function playAudioForText(
     console.warn('TTS fetch failed:', err);
   }
 
-  console.warn('[TTS] Audio afspelen mislukt: Gemini TTS is niet beschikbaar.');
-  return false;
+  console.warn('[TTS] Gemini TTS is niet beschikbaar, vallen terug op browser spraaksynthese.');
+  await speakTextNative(cleanText, langCode, rate);
+  return true;
 }
 
 
