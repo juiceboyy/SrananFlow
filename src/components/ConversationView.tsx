@@ -933,17 +933,17 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
                       >
                         <span className="flex items-center gap-1.5">
                           <ShieldCheck className="w-3.5 h-3.5 text-[#4A6B44] shrink-0" />
-                          <span>Grounded door Sranantongo RAG Kennisbank ({msg.groundingMetadata.sourcesCount} bronnen)</span>
+                          <span>Grounded by Sranantongo RAG Knowledge Base ({msg.groundingMetadata.sourcesCount} {msg.groundingMetadata.sourcesCount === 1 ? 'source' : 'sources'})</span>
                         </span>
                         <span className="flex items-center gap-1 text-[10px] text-[#2F4F2A] font-bold underline shrink-0 ml-2">
                           {expandedSourcesMsgId === msg.id ? (
                             <>
-                              <span>Verberg bronnen</span>
+                              <span>Hide sources</span>
                               <ChevronUp className="w-3 h-3" />
                             </>
                           ) : (
                             <>
-                              <span>Bekijk bronnen</span>
+                              <span>View sources</span>
                               <ChevronDown className="w-3 h-3" />
                             </>
                           )}
@@ -953,7 +953,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
                       {expandedSourcesMsgId === msg.id && (
                         <div className="p-3 border-t border-[#D0E0CC] bg-[#F2F7F0] space-y-2 text-xs text-[#2A3F26] max-h-64 overflow-y-auto">
                           <p className="font-bold text-[10px] uppercase tracking-wider text-[#4A6B44]">
-                            Geraadpleegde Kennisbank Items ({msg.groundingMetadata.groundedSnippets.length}):
+                            Retrieved Knowledge Base Sources ({msg.groundingMetadata.groundedSnippets.length}):
                           </p>
                           <div className="space-y-2">
                             {msg.groundingMetadata.groundedSnippets.map((snippet, sIdx) => (

@@ -226,9 +226,9 @@ export function CorpusManagerView() {
       if (res.ok) {
         const data = await res.json();
         if (data.removedCount > 0) {
-          setAddSuccessMsg(`${data.removedCount} doublures opgeruimd! Er blijven ${data.remainingCount} unieke Sranantongo expressies over.`);
+          setAddSuccessMsg(`${data.removedCount} duplicates cleaned up! ${data.remainingCount} unique Sranantongo items remain.`);
         } else {
-          setAddSuccessMsg('Geen doublures gevonden. Alle items in het RAG Corpus zijn uniek!');
+          setAddSuccessMsg('No duplicates found. All items in the RAG Corpus are unique!');
         }
         await fetchCorpus();
         setTimeout(() => setAddSuccessMsg(null), 5000);
@@ -347,14 +347,14 @@ export function CorpusManagerView() {
           prev.map((item) => (item.id === editingItem.id ? updatedItem : item))
         );
         setEditingItem(null);
-        setAddSuccessMsg('RAG entry succesvol aangepast in de Kennisbank!');
+        setAddSuccessMsg('RAG entry successfully updated in Knowledge Base!');
         setTimeout(() => setAddSuccessMsg(null), 4000);
       } else {
-        alert('Fout bij het opslaan van de wijzigingen.');
+        alert('Error saving changes.');
       }
     } catch (err) {
       console.error('Failed to save edited item:', err);
-      alert('Fout bij verbinden met de server.');
+      alert('Error connecting to server.');
     } finally {
       setIsSavingEdit(false);
     }
@@ -385,9 +385,9 @@ export function CorpusManagerView() {
       if (res.ok) {
         const data = await res.json();
         if (data.isDuplicate || data.addedCount === 0) {
-          setAddSuccessMsg('⚠️ Doublure overgeslagen: Deze Sranantongo expressie staat al in het Corpus.');
+          setAddSuccessMsg('⚠️ Duplicate skipped: This Sranantongo expression already exists in the Corpus.');
         } else {
-          setAddSuccessMsg('1 nieuw item succesvol toegevoegd aan de RAG Kennisbank!');
+          setAddSuccessMsg('1 new item successfully added to RAG Knowledge Base!');
           setNewTitle('');
           setNewSrananText('');
           setNewTranslation('');
@@ -419,9 +419,9 @@ export function CorpusManagerView() {
       });
       if (res.ok) {
         const data = await res.json();
-        let msg = `${data.addedCount || 0} items geïmporteerd in de RAG Kennisbank.`;
+        let msg = `${data.addedCount || 0} items imported into RAG Knowledge Base.`;
         if (data.skippedDuplicatesCount && data.skippedDuplicatesCount > 0) {
-          msg += ` (${data.skippedDuplicatesCount} doublures overgeslagen om dubbele items te voorkomen)`;
+          msg += ` (${data.skippedDuplicatesCount} duplicates skipped to prevent double entries)`;
         }
         setAddSuccessMsg(msg);
         setBulkText('');
