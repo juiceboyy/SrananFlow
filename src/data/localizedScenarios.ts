@@ -248,8 +248,8 @@ export const LOCALIZED_SCENARIOS: Record<string, Partial<Record<string, Localize
         { phrase: 'Omeni miniti mi e waka?', translation: 'How many minutes does it take on foot?' }
       ],
       dialogueFlow: [
-        { stepTitle: '1. Ask for Destination', partnerPrompt: 'Fa waka! Yu abi yepi fu feni wan presi?', suggestedUserResponses: ['Pardon, fa mi e doro na stasyon?', 'Mi e suku a museum, a de kosebi?'] },
-        { stepTitle: '2. Clarify Route', partnerPrompt: 'Waka rektu fesi tu strati, drai na krooki-han kosebi a dresi-oso.', suggestedUserResponses: ['Mi e drai krooki-han baka a dresi-oso?', 'A de kosebi a park?'] },
+        { stepTitle: '1. Ask for Destination', partnerPrompt: 'Fa waka! Yu abi yepi fu feni wan presi?', suggestedUserResponses: ['Pardon, fa mi e doro na stasyon?', 'Mi e suku a museum, a de krosbei?'] },
+        { stepTitle: '2. Clarify Route', partnerPrompt: 'Waka rektu fesi tu strati, drai na krooki-han krosbei a dresi-oso.', suggestedUserResponses: ['Mi e drai krooki-han baka a dresi-oso?', 'A de krosbei a park?'] },
         { stepTitle: '3. Thank & Confirm', partnerPrompt: 'Iya! Yu sa feni en es-esi.', suggestedUserResponses: ['Gran tangi fu yu yepi!', 'Meki yu abi wan switi dey!'] }
       ],
       cultureTip: 'Always start direction inquiries with a polite "Pardon" or "Fa waka".'

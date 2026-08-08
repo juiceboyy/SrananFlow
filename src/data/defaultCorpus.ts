@@ -197,10 +197,10 @@ export const DEFAULT_SRANAN_CORPUS: RAGCorpusItem[] = [
     id: 'dict_05',
     title: 'Dictionary: Direction & Places in Town',
     category: 'dictionary',
-    srananText: 'Reti-han: To the right (Right hand)\nKruka-han: To the left (Left hand)\nWaka rektu fesi: Walk straight ahead\nFoto: City / Paramaribo downtown\nBus: Public bus / Mini-bus transport\nStation: Terminal or stop\nPe a presi de?: Where is the place located?',
+    srananText: 'Reti-han: To the right (Right hand)\nKrooki-han: To the left (Left hand)\nWaka rektu fesi: Walk straight ahead\nKrosbei: Nearby / close by / near (e.g. "A de krosbei?")\nFoto: City / Paramaribo downtown\nBus: Public bus / Mini-bus transport\nStasyon: Terminal or stop / station\nDresi-oso: Pharmacy\nPe a presi de?: Where is the place located?',
     translation: 'Navigation and city landmarks.',
-    usageNotes: 'Essential for direction-asking scenarios.',
-    tags: ['dictionary', 'directions', 'city', 'navigation'],
+    usageNotes: 'Essential for direction-asking scenarios. Strictly use "krosbei" for nearby/close by.',
+    tags: ['dictionary', 'directions', 'city', 'navigation', 'krosbei'],
     source: 'Surinamese Urban Geography',
     dateAdded: '2026-08-01'
   },

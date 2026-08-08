@@ -656,7 +656,7 @@ export const BASE_SRANAN_VOCAB = new Set([
   // 5. Nouns & People
   'man', 'uma', 'pikin', 'oso', 'gran', 'lanti', 'moni', 'presi', 'doti', 'krabita', 'bokoboko', 'pisi', 'suma', 'sani', 'tori', 'boskopu', 'wenkri', 'winkri', 'wowoyo', 'w\'woyo', 'prani', 'pranasi', 'pranas\'', 'srananman', 'sranan-uma', 'mati', 'busi', 'libi',
   // 6. Adjectives, Adverbs & Interrogatives
-  'san', 'pe', 'fa', 'bun', 'srefi', 'santi', 'santa', 'no', 'ai', 'iya', 'kweti', 'koti', 'sranan', 'sranantongo', 'suriname', 'moi', 'dya', 'dyaso', 'drape', 'so', 'kaba', 'eti', 'bigi', 'so-so', 'a sani disi',
+  'san', 'pe', 'fa', 'bun', 'srefi', 'santi', 'santa', 'no', 'ai', 'iya', 'kweti', 'koti', 'krosbei', 'sranan', 'sranantongo', 'suriname', 'moi', 'dya', 'dyaso', 'drape', 'so', 'kaba', 'eti', 'bigi', 'so-so', 'a sani disi',
   // 7. Numbers
   'tu', 'dri', 'fo', 'feifi', 'siksi', 'seibi', 'seybi', 'aiti', 'ayti', 'neigi', 'neygi', 'tin', 'hondro'
 ]);
