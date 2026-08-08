@@ -221,7 +221,7 @@ The following authentic Sranantongo terminology, dictionary entries, proverbs (o
 
 STRICT GROUNDING & LOW-RESOURCE LANGUAGE MANDATE:
 1. Sranantongo is a Low-Resource Language. You MUST ONLY use authentic, verified Sranantongo vocabulary and expressions that are directly grounded in the retrieved RAG Corpus entries below or standard verified Sranantongo lexicon.
-2. ABSOLUTELY NO INVENTED WORDS OR PSEUDO-COMPOUNDS (e.g., NEVER make up non-existent words like "kewti" or incorrect phrases like "koto watra"). For cold water, use "koudi watra" or "kold watra".
+2. ABSOLUTELY NO INVENTED WORDS OR PSEUDO-COMPOUNDS: For cold water, STRICTLY use "kowru watra" or "kowru dringi". NEVER use "kold", "koudi", "koudy", "kewti watra", or "koto watra".
 3. When providing corrections or suggested responses (hints), verify that every word is authentic Sranantongo supported by the RAG corpus. Do NOT substitute user input with fake pseudo-words.
 
 RETRIEVED RAG CONTEXT:
@@ -645,19 +645,20 @@ export function groundScenarioWithRAG(
 }
 
 export const BASE_SRANAN_VOCAB = new Set([
-  'mi', 'yu', 'i', 'a', 'wi', 'unu', 'den', 'e', 'sa', 'ben', 'de', 'na', 'fu', 'nanga', 'ma',
-  'te', 'moro', 'disi', 'dati', 'wan', 'san', 'pe', 'fa', 'taki', 'tak', 'lobi', 'kon', 'go', 'gi',
-  'man', 'uma', 'pikin', 'tan', 'sidon', 'oso', 'nyan', 'njanyan', 'dringi', 'watra', 'switi', 'bun',
-  'tangi', 'odi', 'gran', 'mabon', 'mamanten', 'neti', 'bakadina', 'bika', 'bikasi', 'srefi', 'santi',
-  'prakseri', 'morfarse', 'morfarsu', 'no', 'ia', 'iya', 'kweti', 'koti', 'kowru', 'sranan', 'sranantongo',
-  'suriname', 'mooi', 'lanti', 'moni', 'presi', 'dya', 'dyaso', 'drape', 'so', 'doti', 'boko', 'kaba',
-  'eti', 'ha', 'ho', 'ahe', 'kwe', 'waka', 'meki', 'trow', 'wani', 'mu', 'musu', 'sabi', 'sab',
-  'yere', 'frei', 'firi', 'feti', 'tron', 'wroko', 'du', 'piki', 'pisi', 'suma', 'sani', 'tori',
-  'tu', 'dri', 'fo', 'feifi', 'siksi', 'sebi', 'agtu', 'agti', 'maba', 'neifi', 'tin', 'honderd',
-  'kold', 'faya', 'thee', 'koffie', 'melk', 'melki', 'merki', 'sukru', 'soet', 'rekening',
-  'bai', 'pai', 'srapo', 'boskopu', 'wenkel', 'markt', 'prani', 'srananman', 'sranan-uma', 'mati', 'bigi',
-  'danki', 'grantangi', 'fa-waka', 'kon-mabon', 'switi-kon', 'pe-a-presi-de', 'so-so', 'a-sani-disi',
-  'busi', 'libi', 'swit'
+  // 1. Pronouns, Articles & Particles
+  'mi', 'yu', 'y\'', 'i', 'a', 'wi', 'w\'', 'unu', 'un', 'den', 'e', 'sa', 'ben', 'de', 'na', 'fu', 'f\'', 'nanga', 'ma', 'te', 'moro', 'disi', 'dati', 'wan',
+  // 2. Common Verbs & Action Words
+  'taki', 'tak', 'lobi', 'kon', 'go', 'gi', 'tan', 'sidon', 'nyan', 'nyanyan', 'dringi', 'prakseri', 'waka', 'meki', 'mek', 'trow', 'wani', 'wan\'', 'musu', 'mu', 'sabi', 'sab', 'yere', 'frei', 'firi', 'feti', 'tron', 'wroko', 'du', 'piki', 'bai', 'pai',
+  // 3. Food, Drink & Cafe Terms
+  'watra', 'kowru', 'faya', 'switi', 'te', 'kofi', 'merki', 'sukru', 'rekenin',
+  // 4. Greetings, Courtesy & Expressions
+  'odi', 'grantangi', 'tangi', 'danki', 'switi kon', 'morgu', 'mamanten', 'neti', 'bakadina', 'fa waka',
+  // 5. Nouns & People
+  'man', 'uma', 'pikin', 'oso', 'gran', 'lanti', 'moni', 'presi', 'doti', 'krabita', 'bokoboko', 'pisi', 'suma', 'sani', 'tori', 'boskopu', 'wenkri', 'winkri', 'wowoyo', 'w\'woyo', 'prani', 'pranasi', 'pranas\'', 'srananman', 'sranan-uma', 'mati', 'busi', 'libi',
+  // 6. Adjectives, Adverbs & Interrogatives
+  'san', 'pe', 'fa', 'bun', 'srefi', 'santi', 'santa', 'no', 'ai', 'iya', 'kweti', 'koti', 'sranan', 'sranantongo', 'suriname', 'moi', 'dya', 'dyaso', 'drape', 'so', 'kaba', 'eti', 'bigi', 'so-so', 'a sani disi',
+  // 7. Numbers
+  'tu', 'dri', 'fo', 'feifi', 'siksi', 'seibi', 'seybi', 'aiti', 'ayti', 'neigi', 'neygi', 'tin', 'hondro'
 ]);
 
 export function extractCorpusVocabularySet(corpus: RAGCorpusItem[]): Set<string> {

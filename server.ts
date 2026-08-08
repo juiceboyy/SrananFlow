@@ -251,7 +251,7 @@ The following word(s) are NOT in the verified Sranantongo RAG database: [${ungro
 
 MANDATORY AUTOMATIC REPHRASE:
 Automatically rephrase the response so that EVERY SINGLE WORD is verified and grounded in the RAG Knowledge Base below.
-If an unverified or invented word was used (e.g. non-existent compounds like "koto watra"), replace or remove it using authentic grounded terms (e.g. "kold watra" for cold water, "merki" for milk).
+If an unverified or invented word was used (e.g. non-existent compounds like "koto watra" or pseudo-words like "kold"), replace or remove it using authentic grounded terms (e.g. "kowru watra" for cold water, "merki" for milk).
 
 RETRIEVED RAG CONTEXT:
 ${ragGroundingInstructions || formatGroundingPrompt(groundedSnippets)}
@@ -319,16 +319,20 @@ Return JSON:
       }
     }
 
-    // Anti-Hallucination Replacements based on SrananFlow Hallucinatie & Fouten-Checker guide
     const sanitizeSrananText = (text: string): string => {
       if (!text) return text;
       return text
         .replace(/\bkewti watra\b/gi, 'kowru watra')
         .replace(/\bkoudi watra\b/gi, 'kowru watra')
         .replace(/\bkoudy watra\b/gi, 'kowru watra')
+        .replace(/\bkold watra\b/gi, 'kowru watra')
         .replace(/\bkoudi dringi\b/gi, 'kowru dringi')
+        .replace(/\bkold dringi\b/gi, 'kowru dringi')
         .replace(/\bkoudi\b/gi, 'kowru')
         .replace(/\bkoudy\b/gi, 'kowru')
+        .replace(/\bkold\b/gi, 'kowru')
+        .replace(/\bmelki\b/gi, 'merki')
+        .replace(/\bmelk\b/gi, 'merki')
         .replace(/\bseryusu odi\b/gi, 'wan bigi odi')
         .replace(/\blobi fu nyan\b/gi, 'sa wani fu nyan');
     };
@@ -1108,7 +1112,7 @@ app.post('/api/tts', async (req, res) => {
       '- "bun": pronounce as "boon".',
       '- "nyan" / "njanyan": pronounce "ny" as in Spanish "ñ" / "nyan".',
       '- "watra": pronounce as "wah-trah".',
-      '- "kold": pronounce as "kold".',
+      '- "kowru": pronounce as "kow-roo".',
       '- "faya": pronounce as "fah-yah".',
       '- "sranan" / "sranantongo": pronounce as "srah-nahn" / "srah-nahn-tong-go".'
     ];
