@@ -3597,33 +3597,120 @@ export function generateSilDictionaryJson() {
   const lines = RAW_SIL_DICTIONARY_TEXT.split('\n').map((l) => l.trim()).filter(Boolean);
   const items: RAGCorpusItem[] = [];
 
+  const POS_MAP: Record<string, string> = {
+    'n.': 'Noun',
+    'v.': 'Verb',
+    'vt.': 'Transitive Verb',
+    'vi.': 'Intransitive Verb',
+    'adj.': 'Adjective',
+    'adv.': 'Adverb',
+    'prep.': 'Preposition',
+    'conj.': 'Conjunction',
+    'num.': 'Number',
+    'interj.': 'Interjection',
+    'prn.': 'Pronoun',
+    'art.': 'Article',
+    'dem.prn.': 'Demonstrative Pronoun',
+    'rel.prn.': 'Relative Pronoun',
+    'poss.prn.': 'Possessive Pronoun',
+    'refl.prn.': 'Reflexive Pronoun',
+    'title.': 'Title',
+    'aux.v.': 'Auxiliary Verb',
+    'quan.': 'Quantifier',
+    'cpart.': 'Grammatical Particle',
+    'refl.': 'Reflexive'
+  };
+
+  const ENTRY_REGEX = /^(.*?)\s+(?:(\d+\))\s*)?(n\.|v\.|vt\.|vi\.|adj\.|adv\.|prep\.|conj\.|num\.|interj\.|prn\.|art\.|dem\.prn\.|rel\.prn\.|poss\.prn\.|refl\.prn\.|title\.|aux\.v\.|quan\.|cpart\.|refl\.)\s+(.*)/i;
+
   let count = 0;
   for (const line of lines) {
     count++;
-    // Extract headword
-    const spaceIdx = line.search(/\s/);
-    if (spaceIdx === -1) continue;
 
-    const headwordRaw = line.substring(0, spaceIdx).trim();
-    const rest = line.substring(spaceIdx).trim();
+    const entryMatch = line.match(ENTRY_REGEX);
 
-    // Clean headword key
-    const headword = headwordRaw.replace(/\d+$/, '');
-    const id = `sil_${headwordRaw.toLowerCase().replace(/[^\w]/g, '_')}_${String(count).padStart(4, '0')}`;
+    let headword = '';
+    let senseNumber = '';
+    let posTag = '';
+    let posLabel = '';
+    let restOfLine = '';
 
-    // Extract part of speech if present
-    const posMatch = rest.match(/^(?:1\)|2\)|3\)|4\)|5\))?\s*(n\.|v\.|vt\.|vi\.|adj\.|adv\.|prep\.|conj\.|num\.|interj\.|prn\.|art\.|dem\.prn\.|rel\.prn\.|poss\.prn\.|refl\.prn\.|title\.|aux\.v\.)/i);
-    const pos = posMatch ? posMatch[1] : '';
+    if (entryMatch) {
+      headword = entryMatch[1].trim();
+      senseNumber = entryMatch[2] ? entryMatch[2].trim() : '';
+      posTag = entryMatch[3].toLowerCase();
+      posLabel = POS_MAP[posTag] || posTag;
+      restOfLine = entryMatch[4].trim();
+    } else {
+      // If no explicit POS tag matched, split on first space
+      const spaceIdx = line.search(/\s/);
+      if (spaceIdx !== -1) {
+        headword = line.substring(0, spaceIdx).trim();
+        restOfLine = line.substring(spaceIdx).trim();
+      } else {
+        headword = line.trim();
+        restOfLine = '';
+      }
+    }
 
-    const title = `Dictionary: ${headwordRaw} ${pos ? `(${pos})` : ''}`.trim();
+    // Clean headword key (remove superscript numbers like a1, baka2, etc.)
+    const cleanHeadword = headword.replace(/\d+$/, '').trim();
+    const id = `sil_${cleanHeadword.toLowerCase().replace(/[^\w]/g, '_')}_${String(count).padStart(4, '0')}`;
+
+    // Separate Sranan example sentences & parenthesized English translations
+    let englishDefinition = restOfLine;
+    let srananExample = '';
+    let englishExampleTranslation = '';
+
+    // Extract parenthesized English example translation: (English translation...)
+    const parenMatch = restOfLine.match(/\(([^)]+)\)/);
+    if (parenMatch) {
+      englishExampleTranslation = parenMatch[1].trim();
+      const beforeParen = restOfLine.substring(0, restOfLine.indexOf('(')).trim();
+
+      // Look for sentence boundary (period followed by capital letter in Sranan text)
+      const periodMatch = beforeParen.match(/([^\.]+?\.)\s+([A-Z].*)/);
+      if (periodMatch) {
+        englishDefinition = periodMatch[1].trim();
+        srananExample = periodMatch[2].trim();
+      } else {
+        englishDefinition = beforeParen;
+      }
+    } else {
+      // Check if there are cross-references SYN:, ANT:, SEE:
+      const xrefMatch = restOfLine.match(/(.*?)(?:\s*(?:SYN|ANT|SEE|SPEC|GEN|CPART|FROM\s+[A-Z]+):.*)/i);
+      if (xrefMatch) {
+        englishDefinition = xrefMatch[1].trim();
+      }
+    }
+
+    // Strip any residual leading POS tags or numbers from englishDefinition
+    englishDefinition = englishDefinition.replace(/^(?:(?:\d+\))\s*)?(?:n\.|v\.|vt\.|vi\.|adj\.|adv\.|prep\.|conj\.|num\.|interj\.|prn\.|art\.|dem\.prn\.|rel\.prn\.|poss\.prn\.|refl\.prn\.|title\.|aux\.v\.|quan\.)\s*/i, '').trim();
+
+    // Construct clean srananText (Headword + optional Sranan Example)
+    let srananText = cleanHeadword;
+    if (srananExample) {
+      srananText = `${cleanHeadword} — ${srananExample}`;
+    }
+
+    // Construct clean translation (English Definition + optional English Example Translation)
+    let translation = englishDefinition || restOfLine;
+    translation = translation.replace(/^[-:;\s]+/, '').trim();
+    if (englishExampleTranslation) {
+      translation += ` (${englishExampleTranslation})`;
+    }
+
+    const senseLabel = senseNumber ? ` ${senseNumber}` : '';
+    const title = `Dictionary: ${cleanHeadword}${senseLabel}${posLabel ? ` (${posLabel.toLowerCase()})` : ''}`;
 
     items.push({
       id,
       title,
       category: 'dictionary',
-      srananText: line,
-      translation: rest,
-      tags: ['dictionary', 'sil-2007', headword.toLowerCase()],
+      srananText,
+      translation,
+      usageNotes: posLabel ? `Part of Speech: ${posLabel}` : undefined,
+      tags: ['dictionary', 'sil-2007', cleanHeadword.toLowerCase()],
       source: 'SIL Sranan Tongo - English Dictionary (Wilner 2007)',
       dateAdded: '2026-08-08'
     });
@@ -3636,4 +3723,6 @@ export function generateSilDictionaryJson() {
 }
 
 generateSilDictionaryJson();
+
+
 
