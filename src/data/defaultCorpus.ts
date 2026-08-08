@@ -1,6 +1,9 @@
 import { RAGCorpusItem } from '../types';
+import silDictionaryData from './silDictionaryCorpus.json';
 
-export const DEFAULT_SRANAN_CORPUS: RAGCorpusItem[] = [
+export const SIL_DICTIONARY_CORPUS: RAGCorpusItem[] = silDictionaryData as RAGCorpusItem[];
+
+export const CURATED_SRANAN_CORPUS: RAGCorpusItem[] = [
   // 1. Proverbs & Cultural Odo's
   {
     id: 'odo_01',
@@ -348,3 +351,9 @@ export const DEFAULT_SRANAN_CORPUS: RAGCorpusItem[] = [
     dateAdded: '2026-08-08'
   }
 ];
+
+export const DEFAULT_SRANAN_CORPUS: RAGCorpusItem[] = [
+  ...CURATED_SRANAN_CORPUS,
+  ...SIL_DICTIONARY_CORPUS
+];
+
