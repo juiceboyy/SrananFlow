@@ -348,8 +348,13 @@ Return JSON:
       });
     }
 
-    // Attach Grounding Metadata to response using retrieved RAG snippets
-    const responseSnippets = groundedSnippets.slice(0, 5);
+    // Attach Grounding Metadata to response using retrieved RAG snippets actually used in reply/query
+    const responseSnippets = filterSnippetsToActualUsage(
+      parsed.partnerReply || '',
+      lastUserMessage,
+      groundedSnippets,
+      activeCorpus
+    );
 
     res.json({
       ...parsed,
@@ -1001,7 +1006,12 @@ Return JSON:
       }
     }
 
-    const responseSnippets = groundedSnippets.slice(0, 5);
+    const responseSnippets = filterSnippetsToActualUsage(
+      (resultObj.hints || []).map((h: any) => h.text).join(' '),
+      lastUserMessage,
+      groundedSnippets,
+      activeCorpus
+    );
 
     res.json({
       ...resultObj,

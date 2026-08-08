@@ -145,8 +145,8 @@ export function filterSnippetsToActualUsage(
   if (!replyText || !replyText.trim()) return [];
 
   const combinedText = `${replyText} ${userQuery}`.toLowerCase().replace(/[^\w\s\u00C0-\u024F]/g, ' ');
-  // Filter out short stop words (e.g., 'a', 'de', 'na', 'en', 'fu', 'yu', 'mi', 'wi')
-  const stopWords = new Set(['de', 'na', 'a', 'en', 'fu', 'yu', 'mi', 'wi', 'di', 'so', 'pe', 'fa', 'san', 'van', 'het', 'een', 'de']);
+  // Filter out common short stop words
+  const stopWords = new Set(['de', 'na', 'a', 'en', 'fu', 'yu', 'mi', 'wi', 'di', 'so', 'pe', 'fa', 'san', 'van', 'het', 'een']);
   const tokens = Array.from(
     new Set(
       combinedText
@@ -157,31 +157,44 @@ export function filterSnippetsToActualUsage(
 
   if (tokens.length === 0) return [];
 
-  // Match snippets that contain any of the significant content words in replyText or query
-  const matchingPool = snippets.length > 0 ? snippets : corpus.map((c) => ({
-    id: c.id,
-    title: c.title,
-    category: c.category,
-    srananText: c.srananText,
-    translation: c.translation,
-    phonetic: c.phonetic,
-    similarityScore: 50
-  }));
-
   const verifiedUsedSnippets: GroundedSnippet[] = [];
   const addedIds = new Set<string>();
 
-  for (const snippet of matchingPool) {
+  const matchesAnyToken = (srananText: string, title: string) => {
+    const srananLower = (srananText || '').toLowerCase();
+    const titleLower = (title || '').toLowerCase();
+    return tokens.some((token) => {
+      const regex = new RegExp(`\\b${token}\\b`, 'i');
+      return regex.test(srananLower) || regex.test(titleLower) || srananLower.includes(token) || titleLower.includes(token);
+    });
+  };
+
+  // Step 1: Check pre-retrieved snippets first
+  for (const snippet of snippets) {
     if (addedIds.has(snippet.id)) continue;
-
-    const srananLower = snippet.srananText.toLowerCase();
-    const titleLower = snippet.title.toLowerCase();
-
-    const matchesToken = tokens.some((token) => srananLower.includes(token) || titleLower.includes(token));
-
-    if (matchesToken) {
+    if (matchesAnyToken(snippet.srananText, snippet.title)) {
       addedIds.add(snippet.id);
       verifiedUsedSnippets.push(snippet);
+    }
+  }
+
+  // Step 2: If fewer than 5 matches found, search active corpus for terms actually used in response/query
+  if (verifiedUsedSnippets.length < 5 && corpus && corpus.length > 0) {
+    for (const item of corpus) {
+      if (addedIds.has(item.id)) continue;
+      if (matchesAnyToken(item.srananText, item.title)) {
+        addedIds.add(item.id);
+        verifiedUsedSnippets.push({
+          id: item.id,
+          title: item.title,
+          category: item.category,
+          srananText: item.srananText,
+          translation: item.translation,
+          phonetic: item.phonetic,
+          similarityScore: 50
+        });
+        if (verifiedUsedSnippets.length >= 5) break;
+      }
     }
   }
 
