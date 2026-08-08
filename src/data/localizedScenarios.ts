@@ -389,8 +389,36 @@ export const LOCALIZED_SCENARIOS: Record<string, Partial<Record<string, Localize
       ],
       cultureTip: 'Don’t worry about making mistakes! Free conversation builds confidence and natural speaking rhythm.'
     }
+  },
+  time_appointment: {
+    sr: {
+      title: 'Planning an Appointment & Managing Schedule',
+      description: 'Arrange to meet a friend in Paramaribo, ask for the time ("O lati?"), and agree on dates and times of day.',
+      partnerRole: 'Mati di e plani wan afspraak na Paramaribo',
+      userRole: 'Mati di e meki afspraak nanga yuruten',
+      location: 'Waterkant, Paramaribo',
+      keyVocabulary: [
+        { word: 'O lati?', phonetic: 'oh LAH-tee', translation: 'What time is it?' },
+        { word: 'Tudewroko', phonetic: 'TOO-deh-wroh-koh', translation: 'Tuesday (2nd workday)' },
+        { word: 'Bakadina', phonetic: 'BAH-kah-dee-nah', translation: 'Afternoon' },
+        { word: 'Tamara mamanten', phonetic: 'tah-MAH-rah mah-MAHN-ten', translation: 'Tomorrow morning' },
+        { word: 'Fruku / Lati', phonetic: 'FROO-koo / LAH-tee', translation: 'Early / Late' }
+      ],
+      commonPhrases: [
+        { phrase: 'O lati wi sa miti?', translation: 'What time shall we meet?' },
+        { phrase: 'Tamara bakadina mi sa abi ten.', translation: 'Tomorrow afternoon I will have time.' },
+        { phrase: 'Meki wi miti paati nanga dri yuru.', translation: 'Let us meet around 3 o\'clock.' }
+      ],
+      dialogueFlow: [
+        { stepTitle: '1. Greeting & Proposing a Day', partnerPrompt: 'Fa waka! Sortu dei na inyi wiki disi e puru bun fu miti?', suggestedUserResponses: ['Tide noso tamara mi abi ten.', 'Meki wi miti na tudewroko, tangi.'] },
+        { stepTitle: '2. Setting the Time & Part of Day', partnerPrompt: 'Otyuru fu a dei yu sa wani fu miti? Mamanten noso bakadina?', suggestedUserResponses: ['Bakadina e puru bun, paati nanga dri yuru.', 'Meki wi miti fruku mamanten na aiti yuru.'] },
+        { stepTitle: '3. Confirmation & Departure', partnerPrompt: 'A bun srefi! Dan wi e miti tamara bakadina. Fruku noso lati?', suggestedUserResponses: ['Wi e miti fruku. Gran tangi, tamara wi e miti!', 'No kon lati o! A bun, te tamara!'] }
+      ],
+      cultureTip: 'In Suriname, time expressions for weekdays are traditionally based on workdays (tudewroko = Tuesday, dridewroko = Wednesday). Greetings dynamically change with the part of day: "Switi mamanten" (Morning), "Bun bakadina" (Afternoon), and "Bun neti" (Evening).'
+    }
   }
 };
+
 
 export function getLocalizedScenario(scenario: Scenario, targetLangCode: LanguageCode | string): Scenario {
   const code = (targetLangCode as string) || 'sr';

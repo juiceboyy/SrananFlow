@@ -289,5 +289,62 @@ export const DEFAULT_SRANAN_CORPUS: RAGCorpusItem[] = [
     tags: ['pronunciation', 'dining', 'vowels', 'stress-capitalized'],
     source: 'Sranantongo Phonetics Guide',
     dateAdded: '2026-08-03'
+  },
+
+  // 6. Sranantongo Time Indicators & Concepts (Tijdsaanduidingen & Tijdsbegrippen)
+  {
+    id: 'time_01',
+    title: 'Time: Relative Days (Tra esde, Esde, Tide, Tamara)',
+    category: 'dictionary',
+    srananText: 'Relatieve tijdsaanduidingen: tra esde (eergisteren), esde / esrede (gisteren), tide (vandaag), tamara (morgen), tra tamara (overmorgen), nownowde / dis\'ten (tegenwoordig). E.g., "Tra esde mi ben go luku mi sisa", "Esde mi sribi te aiti yuru", "Tide na munde", "Tamara mi o kon luku yu".',
+    translation: 'Relative day anchors: day before yesterday (tra esde), yesterday (esde), today (tide), tomorrow (tamara), day after tomorrow (tra tamara), nowadays (nownowde / dis\'ten).',
+    usageNotes: 'Essential day anchors in Sranantongo based on the 1986 orthography.',
+    tags: ['time', 'days', 'calendar', 'relative-time', 'vocabulary'],
+    source: 'Sranantongo Tijdsaanduidingen & Tijdsbegrippen (1986 Spelling)',
+    dateAdded: '2026-08-08'
+  },
+  {
+    id: 'time_02',
+    title: 'Time: Days of the Week (Den dei fu a wiki)',
+    category: 'dictionary',
+    srananText: 'Den dei fu a wiki: sonde (zondag), munde (maandag), tudewroko (dinsdag = 2e werkdag), dridewroko (woensdag = 3e werkdag), fodewroko (donderdag = 4e werkdag), freida / freyda (vrijdag), satra (zaterdag). Note: Traditional ritual birth names (Winti) are called "deinen" (e.g., Kwasi/Kwasiba for Sunday, Kofi/Afiba for Friday).',
+    translation: 'Days of the week: Sunday (sonde), Monday (munde), Tuesday (tudewroko), Wednesday (dridewroko), Thursday (fodewroko), Friday (freida), Saturday (satra).',
+    usageNotes: 'Weekdays are named after workdays (tu=2, dri=3, fo=4 + dei + wroko). Sunday, Monday, Friday, Saturday originate from English/Dutch.',
+    tags: ['time', 'days-of-week', 'calendar', 'vocabulary', 'culture'],
+    source: 'Sranantongo Tijdsaanduidingen & Tijdsbegrippen (1986 Spelling)',
+    dateAdded: '2026-08-08'
+  },
+  {
+    id: 'time_03',
+    title: 'Time: Parts of the Day (Fa a dei prati)',
+    category: 'dictionary',
+    srananText: 'Fa a dei prati (Dagdelen): musudei (vroege ochtend, ~3:00-5:00 AM), mamanten (ochtend, na zonsopkomst), brekten (middag/lunchtijd, ~12:00-3:00 PM), bakadina (namiddag), mofoneti (schemering/vroege avond, ~6:00-7:30 PM), neti (avond/nacht), mindrineti (middernacht, 12:00 AM), deiten (overdag).',
+    translation: 'Parts of the day: early morning before daybreak (musudei), morning (mamanten), noontime/lunchtime (brekten), afternoon (bakadina), dusk/early evening (mofoneti), night (neti), midnight (mindrineti), daytime (deiten).',
+    usageNotes: 'Used extensively for greetings (switi mamanten, bun bakadina, bun neti) and scheduling.',
+    tags: ['time', 'parts-of-day', 'greetings', 'vocabulary'],
+    source: 'Sranantongo Tijdsaanduidingen & Tijdsbegrippen (1986 Spelling)',
+    dateAdded: '2026-08-08'
+  },
+  {
+    id: 'time_04',
+    title: 'Time: Telling Time & Clocks (Yuruten & Klokkijken)',
+    category: 'dictionary',
+    srananText: 'Yuruten nanga klokkijken: "O lati?" / "Otyuru?" (Hoe laat is het? / Welke tijd is het?), "yuru" / "uru" (uur / o\'clock, e.g. "Dri yuru" = Drie uur), "oloisi" (horloge / klok), "luku oloisi" (klokkijken). Minutes before/after: "Tin over dri" (10 over 3), "Half aiti" (half 8).',
+    translation: 'Asking time and reading clocks: "O lati?" or "Otyuru?" means "What time is it?". "Yuru" means hour/o\'clock. "Oloisi" is clock/watch.',
+    usageNotes: 'To ask the time, use "O lati?" or "Otyuru?".',
+    tags: ['time', 'clock', 'asking-time', 'yuruten', 'vocabulary'],
+    source: 'Sranantongo Tijdsaanduidingen & Tijdsbegrippen (1986 Spelling)',
+    dateAdded: '2026-08-08'
+  },
+  {
+    id: 'time_05',
+    title: 'Time: Time Adverbs (Handige Bijwoorden van Tijd)',
+    category: 'grammar',
+    srananText: 'Handige bijwoorden van tijd: didyonsro (zojuist/net), now (nu), nownow (nu meteen/direct), wantron / wante (onmiddellijk), wantron so (plotseling), fruku (vroeg), lati (laat), kaba / kba (al/reeds/klaar), ete (nog/nog steeds), ala ten (altijd), wan ten (ooit/eens), sranga (tijdelijk). E.g., "Didyonsro a bus kmopo fu dyaso", "Yu mu kon nownow!", "A no kon na oso ete".',
+    translation: 'Time adverbs: just now (didyonsro), now (now), right now (nownow), immediately (wantron/wante), suddenly (wantron so), early (fruku), late (lati), already/finished (kaba/kba), still/yet (ete), always (ala ten), sometime (wan ten), temporarily (sranga).',
+    usageNotes: 'Crucial adverbs for expressing sequence, duration, and urgency in conversation.',
+    tags: ['time', 'adverbs', 'grammar', 'syntax', 'vocabulary'],
+    source: 'Sranantongo Tijdsaanduidingen & Tijdsbegrippen (1986 Spelling)',
+    dateAdded: '2026-08-08'
   }
 ];

@@ -456,5 +456,45 @@ export const SCENARIOS: Scenario[] = [
       { stepTitle: '3. Wrap-up Feedback', partnerPrompt: 'You expressed your thoughts clearly! Any questions?', suggestedUserResponses: ['¿Qué palabras debería mejorar?', '¡Muchas gracias por la excelente lección!'] }
     ],
     cultureTip: 'Don’t worry about perfection! Free-form practice builds conversational rhythm and confidence.'
+  },
+  {
+    id: 'time_appointment',
+    title: 'Planning an Appointment & Managing Schedule',
+    description: 'Arrange to meet a friend in Paramaribo, ask for the time ("O lati?"), and agree on dates and times of day.',
+    category: 'daily',
+    partnerRole: 'Friend planning a weekend meetup in Paramaribo',
+    userRole: 'Friend organizing a schedule and setting a meeting time',
+    location: 'Waterkant Riverfront, Paramaribo',
+    difficulty: 'A2',
+    icon: 'Calendar',
+    color: 'from-purple-500 to-indigo-600',
+    initialGreeting: {
+      es: '¡Hola! ¿Cómo estás? Me encantaría que nos viéramos esta semana. ¿A qué hora y qué día tienes libre?',
+      fr: 'Bonjour ! Comment vas-tu ? J’aimerais beaucoup qu’on se voie cette semaine. Quel jour et à quelle heure es-tu libre ?',
+      de: 'Hallo! Wie geht es dir? Ich würde mich freuen, wenn wir uns diese Woche treffen. Welcher Tag und welche Uhrzeit passen dir?',
+      it: 'Ciao! Come stai? Mi piacerebbe molto incontrarci questa settimana. Che giorno e a che ora sei libero?',
+      pt: 'Olá! Como você está? Adoraria nos encontrar esta semana. Que dia e que horas você tem livre?',
+      en: 'Hi there! How are you? I would love for us to catch up this week. What day and time work best for you?',
+      sr: 'Fa waka! Fa a e go? Mi ben e prakseri meki wi miti wan dei na inyi wiki disi. Otyuru yu sa abi ten?'
+    },
+    keyVocabulary: [
+      { word: 'O lati?', phonetic: 'oh LAH-tee', translation: 'What time is it?' },
+      { word: 'Tudewroko', phonetic: 'TOO-deh-wroh-koh', translation: 'Tuesday (2nd workday)' },
+      { word: 'Bakadina', phonetic: 'BAH-kah-dee-nah', translation: 'Afternoon' },
+      { word: 'Tamara mamanten', phonetic: 'tah-MAH-rah mah-MAHN-ten', translation: 'Tomorrow morning' },
+      { word: 'Fruku / Lati', phonetic: 'FROO-koo / LAH-tee', translation: 'Early / Late' }
+    ],
+    commonPhrases: [
+      { phrase: 'O lati wi sa miti?', translation: 'What time shall we meet?', audioText: 'O lati wi sa miti?' },
+      { phrase: 'Tamara bakadina mi sa abi ten.', translation: 'Tomorrow afternoon I will have time.', audioText: 'Tamara bakadina mi sa abi ten.' },
+      { phrase: 'Meki wi miti paati nanga dri yuru.', translation: 'Let us meet around 3 o\'clock.', audioText: 'Meki wi miti paati nanga dri yuru.' }
+    ],
+    dialogueFlow: [
+      { stepTitle: '1. Greeting & Proposing a Day', partnerPrompt: 'Fa waka! Sortu dei na inyi wiki disi e puru bun fu miti?', suggestedUserResponses: ['Tide noso tamara mi abi ten.', 'Meki wi miti na tudewroko, tangi.'] },
+      { stepTitle: '2. Setting the Time & Part of Day', partnerPrompt: 'Otyuru fu a dei yu sa wani fu miti? Mamanten noso bakadina?', suggestedUserResponses: ['Bakadina e puru bun, paati nanga dri yuru.', 'Meki wi miti fruku mamanten na aiti yuru.'] },
+      { stepTitle: '3. Confirmation & Departure', partnerPrompt: 'A bun srefi! Dan wi e miti tamara bakadina. Fruku noso lati?', suggestedUserResponses: ['Wi e miti fruku. Gran tangi, tamara wi e miti!', 'No kon lati o! A bun, te tamara!'] }
+    ],
+    cultureTip: 'In Suriname, time expressions for weekdays are traditionally based on workdays (tudewroko = Tuesday, dridewroko = Wednesday). Greetings dynamically change with the part of day: "Switi mamanten" (Morning), "Bun bakadina" (Afternoon), and "Bun neti" (Evening).'
   }
 ];
+
