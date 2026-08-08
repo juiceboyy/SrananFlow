@@ -19,7 +19,7 @@ export const SCENARIOS: Scenario[] = [
       it: 'Ciao! Benvenuto al Café Italia. Cosa vorresti ordinare oggi?',
       pt: 'Olá! Bem-vindo ao Café Central. O que gostaria de pedir hoje?',
       en: 'Hi there! Welcome to the corner café. What can I get started for you today?',
-      sr: 'Fa waka! Wan switi kon na Café Delicia. San yu sa lobi fu nyan dyaso tide?'
+      sr: 'Fa waka! Switi kon na Café Delicia. San yu sa wani fu dringi noso nyan dyaso tide?'
     },
     keyVocabulary: [
       { word: 'Un café con leche', phonetic: 'oon kah-FEH kon LEH-cheh', translation: 'Coffee with milk' },
@@ -57,7 +57,7 @@ export const SCENARIOS: Scenario[] = [
       it: 'Buonasera! Benvenuto all’Hotel Plaza. Ha una prenotazione?',
       pt: 'Boa tarde! Bem-vindo ao Hotel Plaza. Você tem uma reserva conosco?',
       en: 'Good afternoon and welcome to the Grand Hotel. Do you have a reservation with us?',
-      sr: 'Bun bakadina! Wan switi kon na Hotel Plaza. Yu abi wan reserfaring kaba?'
+      sr: 'Bun bakadina! Switi kon na Hotel Plaza. Yu abi wan reserfering kaba?'
     },
     keyVocabulary: [
       { word: 'Una reserva', phonetic: 'oo-nah reh-SER-vah', translation: 'A reservation' },
@@ -95,7 +95,7 @@ export const SCENARIOS: Scenario[] = [
       it: 'Ciao! Sembri un po’ perso con quella mappa. Serve aiuto per trovare qualcosa?',
       pt: 'Olá! Você parece meio perdido com esse mapa. Precisa de ayuda para achar algum lugar?',
       en: 'Hey there! You look a bit lost with that map. Need a hand finding somewhere?',
-      sr: 'Fa waka! Yu e luku tapsi siki tapu a karta. Yu abi yepi nodig fu feni wan presi?'
+      sr: 'Fa waka! Yu e luku leki yu lassi trassi tapu a kaarti. Yu abi yepi fu feni wan presi?'
     },
     keyVocabulary: [
       { word: 'A la derecha', phonetic: 'ah lah deh-REH-chah', translation: 'To the right' },
@@ -133,7 +133,7 @@ export const SCENARIOS: Scenario[] = [
       it: 'Prego! Frutta fresca e artigianato locale. Cosa posso offrirle oggi?',
       pt: 'Olha a fruta fresquinha! O que vai levar hoje?',
       en: 'Step right up! Fresh fruits and handmade crafts. What can I get for you today?',
-      sr: 'Kon inye! Nyun froktu nanga bow sani. San yu e suku tide, mi mati?'
+      sr: 'Kon insei! Nyun froktu nanga bow sani. San yu e suku tide, mi mati?'
     },
     keyVocabulary: [
       { word: '¿Cuánto cuesta esto?', phonetic: 'KWAN-toh KWES-tah ES-toh', translation: 'How much does this cost?' },
@@ -171,7 +171,7 @@ export const SCENARIOS: Scenario[] = [
       it: 'Buongiorno. Benvenuto in farmacia. Come posso aiutarla oggi?',
       pt: 'Bom dia! Bem-vindo à farmácia. Como posso ajudar?',
       en: 'Good morning! Welcome to the pharmacy. How can I assist you today?',
-      sr: 'Bun mamanten! Odi na a dresi oso. Fa mi kan yepi yu tide?'
+      sr: 'Bun mamanten! Switi kon na a dresi-oso. Fa mi kan yepi yu tide?'
     },
     keyVocabulary: [
       { word: 'Me duele la cabeza', phonetic: 'meh DWEH-leh lah kah-BEH-thah', translation: 'My head hurts' },
@@ -209,7 +209,7 @@ export const SCENARIOS: Scenario[] = [
       it: 'Buonasera e benvenuti al Ristorante Olivo. Avete prenotato?',
       pt: 'Boa noite! Bem-vindos ao Restaurante Olivo. Têm reserva?',
       en: 'Good evening! Welcome to El Olivo Restaurant. Do you have a table reserved?',
-      sr: 'Bun neti! Wan switi kon na Restaurante El Olivo. Yu abi wan reserfaring?'
+      sr: 'Bun neti! Switi kon na Restaurante El Olivo. Yu abi wan reserfering?'
     },
     keyVocabulary: [
       { word: 'La recomendación del chef', phonetic: 'lah reh-koh-men-dah-THYON del chef', translation: 'Chef’s recommendation' },
@@ -247,7 +247,7 @@ export const SCENARIOS: Scenario[] = [
       it: 'Ciao! Che bella giornata oggi al parco. Vieni spesso a fare una passeggiata qui?',
       pt: 'Olá! Que dia lindo no parque. Você costuma caminhar por aqui com frequência?',
       en: 'Hey! It’s such a gorgeous day in the park. Do you come here often to hang out?',
-      sr: 'Fa waka! A dey e snek krin so dyaso na dyari. Yu e kon waka dya furu tron?'
+      sr: 'Fa waka! A dey e skin krin so dyaso na park. Yu e kon waka dya furu tron?'
     },
     keyVocabulary: [
       { word: 'Mis pasatiempos', phonetic: 'mees pah-sah-TYEM-pos', translation: 'My hobbies' },
@@ -285,7 +285,7 @@ export const SCENARIOS: Scenario[] = [
       it: 'Buonasera! Benvenuto per la visita dell’appartamento. Come le sembra il soggiorno?',
       pt: 'Boa tarde! Bem-vindo à visita do apartamento. O que achou da sala?',
       en: 'Good afternoon! Thanks for coming to view the apartment. How do you like the natural light in the living room?',
-      sr: 'Bun bakadina! Tanangi fu kon luku a oso. Fa yu e feni a faya in a libikamer?'
+      sr: 'Bun bakadina! Gran tangi fu kon luku a oso. Fa yu e feni a faya na ini a libi-kamra?'
     },
     keyVocabulary: [
       { word: 'El alquiler mensual', phonetic: 'el al-kee-LER men-SWAL', translation: 'Monthly rent' },
@@ -323,7 +323,7 @@ export const SCENARIOS: Scenario[] = [
       it: 'Buongiorno e benvenuto. Per iniziare, vorresti raccontarmi qualcosa sul tuo percorso professionale?',
       pt: 'Bom dia! Obrigado por participar desta entrevista. Para começar, você poderia me falar um pouco sobre sua trajetória profissional?',
       en: 'Good morning! Thank you for meeting with me today. To get started, could you briefly introduce yourself and share your background?',
-      sr: 'Bun mamanten! Gran tangi fu kon na a wroko interview dyaso. Yu kan taki pikinso fu yu wroko ondrofeni?'
+      sr: 'Bun mamanten! Gran tangi fu kon na a wroko-interview dyaso. Yu kan taki pikinso fu yu wroko-ondrofeni?'
     },
     keyVocabulary: [
       { word: 'Mi experiencia laboral', phonetic: 'mee ex-peh-RYEN-thyah lah-boh-RAL', translation: 'My work experience' },
@@ -361,7 +361,7 @@ export const SCENARIOS: Scenario[] = [
       it: 'Buongiorno! Benvenuto alla biglietteria. Per quale destinazione viaggia oggi?',
       pt: 'Bom dia! Bem-vindo à bilheteria. Para onde vai viajar hoje?',
       en: 'Good morning! Welcome to the train station ticket window. Where are you traveling today?',
-      sr: 'Bun mamanten! Odi na a treinkassa. Na sortu presi yu e go tide?'
+      sr: 'Bun mamanten! Switi kon na a treinkassa. Na sortu presi yu e go tide?'
     },
     keyVocabulary: [
       { word: 'Un billete de ida y vuelta', phonetic: 'oon bee-LYEH-teh deh EE-dah ee VWEL-tah', translation: 'A round-trip ticket' },
@@ -399,7 +399,7 @@ export const SCENARIOS: Scenario[] = [
       it: 'Benvenuto a casa nostra! Siamo felicissimi di averti a cena con noi stasera.',
       pt: 'Seja muito bem-vindo à nossa casa! Estamos felizes em ter você para o jantar.',
       en: 'Come on in! Welcome to our home. We are so thrilled to have you join us for dinner tonight!',
-      sr: 'Kon inye! Switi odi in wi oso! Wi e prisiri srefi srefi fu ab yu leki kompe na wi tafra tide neti.'
+      sr: 'Kon insei! Switi odi na ini wi oso! Wi e prisiri srefi srefi fu abi yu leki kompe na wi tafra tide neti.'
     },
     keyVocabulary: [
       { word: '¡Está riquísimo!', phonetic: 'es-TAH ree-KEE-see-moh', translation: 'It is delicious!' },
@@ -437,7 +437,7 @@ export const SCENARIOS: Scenario[] = [
       it: 'Ciao! Sono pronto a parlare di qualsiasi argomento tu voglia. Di cosa vorresti chiacchierare oggi?',
       pt: 'Olá! Estou pronto para conversar sobre qualquer assunto que você quiser. Sobre o que gostaria de falar hoje?',
       en: 'Hello! I am ready to chat about anything you like. What topic shall we explore today?',
-      sr: 'Fa waka! Mi de klari fu taki fu san yu wani. Tori fu san yu wani lobi fu taki tide?'
+      sr: 'Fa waka! Mi de klari fu taki fu san yu wani. Sortu tori yu sa wani taki fu en tide?'
     },
     keyVocabulary: [
       { word: 'En mi opinión', phonetic: 'en mee oh-pee-NYON', translation: 'In my opinion' },
