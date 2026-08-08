@@ -87,3 +87,10 @@ When generating audio via Gemini TTS or constructing Director's Notes for speech
 2. **Component Refactoring**: Keep UI components under 300 lines of code. Split into smaller sub-components when necessary.
 3. **Gemini Latency**: Keep context windows conservative and set `temperature: 0.0` for structured output API endpoints to minimize latency.
 4. **Automatic Git Push**: Push tested changes to `main` branch.
+
+---
+
+## 5. Strict English UI Language Requirement
+
+* **All UI Copy**: All user interface text, button labels, badge indicators, modal titles, status notifications, and error alerts in this project must be written strictly in **English**.
+* **Target Language Content Only**: Only actual target language learning materials (such as Sranantongo phrases, vocabulary, and phonetic guides) should appear in Sranantongo. Never introduce Dutch or secondary languages into UI labels or badge elements.
