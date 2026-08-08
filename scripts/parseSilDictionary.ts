@@ -2796,6 +2796,295 @@ syowman n. porter, carrier of loads.
 syurkoro n. sauerkraut.
 syuru adj. loose, easily pulled out or apart (hair/meat cooked to pulp).
 syusyu 1) n. whisper, whispering. 2) v. whisper.
+sneisi2 n. flea. Pulex irritans.
+sneisi puiri 1) n. medicinal powder used for headaches. 2) n. spice.
+sneisi-alatria n. Chinese vermicelli.
+sneisitaya n. taro, eddo, coco edible tuber.
+snek'fisi n. marbled swamp eel. SYN: logologo.
+sneki n. snake.
+snekimarkusa n. small wild-growing passion fruit.
+snoifi 1) v. sniff, sniffle. 2) v. snort.
+snoiti v. blow one's nose.
+snorku v. snore.
+snuku n. snook fish.
+so 1) conj. so, therefore, as a result. 2) adv. so. 3) adv. such.
+sobun 1) conj. in other words. 2) conj. sometimes.
+sodra adv. as soon as. VARIANT: sodrai.
+sodro n. upstairs, attic. ANT: gron.
+sofasi conj. thus, in such a way.
+soi adj. boring, dull.
+soifri adj. pure. SYN: krin.
+soigi v. suck.
+soigi gwe v. soak up, soak into.
+sokekwikwi n. fresh-water armored catfish.
+soktu 1) v. sigh. 2) n. sigh.
+solanga 1) conj. as long as. 2) conj. whenever, every time.
+soleki conj. such as.
+soleki fa conj. just as, in the same way.
+solfru 1) n. silver. 2) adj. silver. VARIANT: sorfu.
+solfrumoni n. silver coin.
+solfrusmeti n. silversmith.
+someni 1) adj. so many, so much. 2) adv. very much.
+someni langa kba a long time ago, for a long time now.
+son1 n. sun.
+son2 prn. some.
+son leisi sometimes. SYN: son ten; son tron.
+son sma some people.
+son ten sometimes.
+son tron sometimes.
+sonde n. Sunday.
+sonde wowoyo n. Sunday market outside town.
+sondro adv. without.
+sondu n. sin. SYN: pikadu.
+sondusma n. sinner.
+sonloiri n. three-toed sloth.
+sonte adv. maybe, perhaps.
+sonwan prn. some.
+sopi 1) n. alcoholic beverage. 2) n. rum.
+sopibere n. beer belly.
+sopikuku n. rum cake.
+sopiman n. drunkard, alcoholic.
+sopo n. soap.
+swit'sopo n. fragrant bath soap.
+sopo skuma soapsuds.
+sopo watra soapy water.
+sopropo n. carilla, bitter gourd vegetable.
+sor'ai n. eye infection.
+sorfu n. silver (solfru).
+Sorgu n. Zorg en Hoop neighborhood in Paramaribo.
+sorgu 1) v. care for, take care of. 2) n. worries, cares.
+sori 1) v. show, point out. 2) v. teach someone a lesson. 3) v. seem like, appear as.
+soro 1) n. sore, wound, infection. 2) adj. infected, painful.
+diki wan soro pick at a scab.
+soro-ai n. eye infection.
+soromarki n. scar.
+sorosoro n. many sores or wounds.
+sortu 1) n. kind, sort, species. 2) prn. which, what kind. 3) rel.prn. which, what kind.
+soso 1) adv. just, only. 2) adj. empty.
+fu soso 1) free, cheap. 2) without result, for nothing.
+sosofutu adv. barefooted.
+sososani n. silly or unimportant things.
+sososkin adj. naked, bare.
+sosrefi 1) conj. in addition to, also. 2) conj. including, even.
+sote adv. so much, to a high degree, a lot.
+sowan adj. of the same kind.
+sowsu n. sauce, gravy.
+sowt'aleisi n. plain cooked rice served with salt.
+sowt'amsoi n. bitter greens soaked in brine.
+sowt'fisi n. salt fish. SYN: batyaw.
+sowt'lemki n. salted pickled limes.
+sowt'meti n. corned beef in brine.
+sowt'meti-owru n. short straight machete.
+sowt'sani n. salty snack foods, chips.
+sowtu1 1) n. salt. 2) adj. salty. 3) v. preserve with salt.
+sowtu poti wait for right moment to get back at someone.
+sowtu2 n. wart.
+sowtu3 adj. unlucky.
+sowt'watra n. salt water, brine.
+span 1) adj. exciting, tense. 2) n. excitement, tension. 3) v. be upset or angry. 4) v. tighten, stretch out. 5) adj. tight, full. 6) v. load a gun. 7) adj. loaded gun.
+No span! Don't worry!
+spansfrow n. praying mantis.
+Spanyoro 1) n. Spaniard, Spanish speaker. 2) adj. Spanish. 3) n. Spanish language.
+Spanyorokondre n. Spain.
+Spanyoroman n. Spaniard.
+spare n. spare tire.
+spari n. stingray.
+speri1 1) adj. the same, alike, equal. 2) n. peer group.
+speri2 n. spare tire.
+spesrei 1) n. spice, seasoning. 2) v. marinate meat.
+spesrutu 1) adj. special, specific. 2) adv. especially.
+spikri1 1) n. nail. 2) v. nail.
+spikri2 n. mirror.
+spikrimarki n. nail hole, scar.
+spikri-olo n. nail hole.
+spiti 1) v. spit, spit out. 2) n. spittle.
+spoiti 1) v. spray, squirt. 2) v. vaccinate, give injection. 3) n. vaccination, injection. 4) n. syringe.
+naki spoiti give an injection.
+teki spoiti get vaccinated.
+sponsu n. sponge.
+spot'popki n. laughingstock.
+spotu n. joke, prank.
+a no spotu exceptional amount.
+meki spotu nanga mock, make fun of.
+ori na spotu mock, make fun of.
+spotuman n. joker, prankster.
+sprenka n. grasshopper, locust.
+sproiti v. sprout, germinate.
+spuku 1) n. ghost. 2) v. be haunted. 3) v. give unexplained trouble.
+spun 1) n. spoon. 2) v. spoon out.
+spuru v. wash, rinse clothes.
+srafu n. slave.
+srafumasra n. slave master.
+srafumisi n. slave mistress.
+srafuten n. slavery era.
+srakti v. butcher, slaughter.
+sraktiman n. butcher.
+srakti-oso n. slaughterhouse, butcher shop.
+Sranan 1) n. country of Suriname. 2) adj. Surinamese. 3) n. Sranan Tongo language.
+Sranan Tongo n. language of Suriname.
+Sranankondre n. Suriname.
+Srananliba n. Suriname River.
+Srananman n. Surinamer.
+Sranansma n. Surinamese people.
+sranga adv. temporarily, for the time being. Mi de dya nanga fakansi. Mi e tan sranga na mi s'sa. (I am here on vacation. I am staying temporarily with my sister). Wakti sranga. Mi e kon. (Wait a second. I'm coming).
+sranti adj. insolent, impudent, cheeky. SYN: asranti.
+srapu 1) adj. sharp. 2) v. sharpen. 3) adv. clearly. 4) adj. clever, intelligent.
+srefi 1) adj. same. 2) adv. places emphasis on subject.
+srefidensi n. independence. SYN: manspasi.
+srefsrefi adv. puts strong emphasis (really, truly).
+sreka v. prepare.
+sren n. old coin worth 8 cents.
+srepi v. drag, tow.
+sriba n. small silver-colored bait fish.
+sribi 1) v. sleep. 2) n. sleep, sleepiness.
+go sribi go to bed.
+sribikamra n. bedroom.
+sribikrosi n. blanket, pajamas.
+sribi-papaya n. woven sleeping mat.
+sribipe n. sleeping place.
+sribipresi n. sleeping place.
+sribisani n. sheets and blankets.
+srikasneki n. scarletsnake.
+srio n. blue-black grassquit.
+sroisi n. sluice.
+sroiti adj. miserly, stingy.
+sroto 1) n. lock. 2) n. key. 3) v. lock. 4) adj. locked. 5) v. lock up. 6) v. be locked up.
+srudati n. soldier, military person.
+srudati kampu n. military base.
+s'sa n. sister (variant of sisa).
+s'sei n. scissors (variant of sisei).
+s'sibi n. broom (variant of sisibi).
+s'so adj. empty (variant of soso).
+s'su n. shoes (variant of susu).
+stampu1 1) v. pound, mash peanuts/plantains. 2) v. stamp feet.
+stampu2 adj. stocky, thick-set.
+stampu3 1) v. stamp, place seal on document. 2) n. seal, stamp.
+stan SEE MAIN ENTRY: ori stan.
+stari n. star.
+stegre 1) v. rear up on hind legs. 2) v. wheelie.
+steifi 1) adj. sturdy, strong, well-built. 2) adj. stiff.
+steisri adj. starched.
+stèm v. tune a musical instrument.
+sten n. voice.
+poti sten vote.
+sterapra n. star apple.
+stesre 1) v. starch clothes. 2) adj. starched.
+stimofo n. meat, fish, and vegetables eaten with rice/bread.
+stof'sani n. stewed fruit.
+stofu 1) v. cook in covered pan with little water, braise, steam, stew. 2) adj. braised, steamed, stewed.
+stofukronto n. coconut cooked with sugar.
+stofusani n. stewed fruits.
+stoipi1 n. seizure, convulsion.
+stoipi2 n. tailbone.
+stoipi-siki n. epilepsy.
+stompu n. tree stump.
+ston 1) n. rock, stone. 2) n. concrete building block. 3) adj. made of stone/concrete.
+broko ston broken concrete blocks.
+stonbangi n. concrete bench.
+stonbanti n. jockstrap.
+stondoifi n. ground dove.
+stonfutu 1) n. foundation stones. 2) n. veteran employee.
+stonka n. ground dove.
+stonpopki n. statue, idol.
+stonskotu n. cement block wall.
+stotu1 v. stub toe, knock head.
+stotu2 v. end, stop. SYN: kba.
+stowtu 1) v. whine, demand attention (children). 2) v. cry often and a lot.
+straf'man n. convict, prisoner.
+straf'oso n. jail, prison.
+strafu 1) n. punishment. 2) v. punish.
+de na strafu be in jail.
+koti strafu serve time in prison.
+leisi strafu pronounce sentence.
+nyan strafu undergo punishment.
+strafuman n. convict, prisoner.
+strafu-oso n. jail, prison.
+strati n. street.
+go na strati go out.
+strei 1) v. compete, struggle, fight. 2) n. struggle, game, match, contest. 3) v. bet. 4) n. bet.
+streiboto n. boat race.
+streilon n. running race.
+strepi 1) n. stripe, line. 2) adj. striped. 3) v. strike through, cross out.
+hari wan strepi draw a line.
+strepistrepi adj. striped.
+stroistroi v. sprinkle dry ingredients.
+strun n. lemon fruit.
+strungrasi n. lemongrass plant.
+struntyi n. sty (eye inflammation).
+stuka 1) v. study. 2) n. course of study.
+stupu n. steps, raised walkway.
+sturu 1) n. chair, seat. 2) n. seat in parliament.
+sukru 1) n. sugar. 2) adj. sweet. 3) v. sweeten. 4) adj. sociable, fun. 5) n. diabetes.
+sukrubakba n. sweet banana variety.
+sukrub'bu n. bubble in sand after rain.
+sukru-erki n. coconut-peanut-sugar sweet.
+sukrukandra n. sugar cube, candy.
+sukrumira n. pharaoh ant.
+sukrumoisi n. sprinkles, small cake candies.
+sukrupatu n. sugarbowl.
+sukrusani n. candy, sweets.
+sukrusiki n. diabetes.
+sukruskrati n. sweetened chocolate.
+suku 1) v. seek, look for. 2) v. flirt with, chase after.
+diki suku investigate thoroughly.
+suku mofo be offensive / provoke.
+sula n. river rapid, waterfall.
+suma 1) prn. who. 2) prn. whom.
+sungu 1) v. sink, flood. 2) v. be flooded, underwater. 3) v. drown.
+sunsaka n. soursop fruit.
+supu n. soup.
+supuwiwiri n. celery.
+susu n. shoe, pair of shoes.
+sutu1 1) v. shoot firearm. 2) v. shoot off fireworks.
+sutu2 v. explode, blow out.
+sutu3 1) v. push or stick into closed space. 2) v. bite, prick.
+sutu faya gi incite, egg on crowd.
+sutu wan finga go na loktu raise one's hand.
+sutusutu v. prod, jab repeatedly.
+swa 1) adj. sour. 2) v. make sour, turn sour.
+swa en fesi scowl.
+swagri n. brother-in-law.
+swai v. swing, wave.
+swaki 1) adj. weak. 2) n. weakness.
+swakifasi n. weakness.
+swakisei n. weak spot.
+swakiman n. weak one.
+swampu n. swamp, marsh.
+swamputodo n. Suriname toad, pipa toad.
+swarfudosu n. matchbox.
+swarfutiki n. matchstick.
+swarfu n. match.
+swari v. swallow.
+swasani n. pickled fruits in vinegar.
+swen v. swim.
+swenman n. swimmer.
+sweri1 1) v. swear an oath. 2) n. oath.
+sweri2 1) v. swell, rise. 2) n. lump, swelling. 3) adj. swollen.
+sweti 1) n. sweat. 2) v. sweat. 3) v. make an effort, exert oneself.
+swipi n. parrot snake.
+swit'bonki n. monkeypod tree / edible pod fruit.
+switi 1) adj. delicious, tasty, pleasant. 2) adj. pleasant, nice. 3) n. delicious flavor. 4) adv. fun, happy, easy.
+switismeri n. perfume, incense.
+swit'kasaba n. sweet cassava.
+swit'patata n. sweet potato.
+syabisyabi adj. shabby, slovenly.
+syant n. sergeant.
+syatu 1) adj. short, shallow. 2) v. shorten.
+syatu pasi take a shortcut.
+syen 1) n. shame, disgrace, embarrassment. 2) adj. shameful, scandalous. 3) v. feel ashamed. 4) v. be shy.
+kon na syen be brought to shame.
+syensyen v. be shy or bashful.
+syinsyart n. slingshot, catapult.
+syobu v. shove, push, jab.
+syobusyobu v. repeatedly push or shove.
+syoro n. shore, bank of river.
+syòt n. shot of alcohol.
+syow1 v. haul, carry heavy load.
+syow2 n. show, spectacle.
+syowman n. porter, carrier of loads.
+syurkoro n. sauerkraut.
+syuru adj. loose, easily pulled out or apart.
+
 
 tabaka n. tobacco.
 tabiki n. island in a river.
