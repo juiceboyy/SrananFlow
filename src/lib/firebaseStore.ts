@@ -1,9 +1,8 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, collection, getDocs, doc, getDoc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
-import fs from 'fs';
-import path from 'path';
 import { RAGCorpusItem } from '../types';
 import { DEFAULT_SRANAN_CORPUS } from '../data/defaultCorpus';
+import firebaseAppletConfig from '../../firebase-applet-config.json';
 
 let db: ReturnType<typeof getFirestore> | null = null;
 
@@ -11,11 +10,8 @@ export function getFirestoreDB() {
   if (db) return db;
 
   try {
-    const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
-    if (fs.existsSync(configPath)) {
-      const rawConfig = fs.readFileSync(configPath, 'utf-8');
-      const config = JSON.parse(rawConfig);
-      
+    const config = firebaseAppletConfig;
+    if (config && config.projectId) {
       const firebaseConfig = {
         apiKey: config.apiKey,
         authDomain: config.authDomain,
@@ -30,8 +26,6 @@ export function getFirestoreDB() {
       
       db = getFirestore(app, dbId);
       console.log('Successfully connected to Cloud Firestore database:', dbId);
-    } else {
-      console.warn('firebase-applet-config.json not found. Using in-memory store.');
     }
   } catch (err) {
     console.error('Failed to initialize Firebase Firestore:', err);
@@ -46,16 +40,17 @@ const COLLECTION_NAME = 'ragCorpus';
  * Load all items from Firestore. If Firestore is empty on first run, seed with DEFAULT_SRANAN_CORPUS.
  */
 export async function loadCorpusFromFirestore(): Promise<RAGCorpusItem[]> {
-  const firestore = getFirestoreDB();
-  if (!firestore) return [...DEFAULT_SRANAN_CORPUS];
-
   try {
-    const colRef = collection(firestore, COLLECTION_NAME);
-    const snapshot = await getDocs(colRef);
+    const firestore = getFirestoreDB();
+    if (!firestore) return [...DEFAULT_SRANAN_CORPUS];
 
-    if (snapshot.empty) {
-      console.log('Firestore RAG Corpus collection is empty. Seeding default Sranantongo corpus...');
-      await seedDefaultCorpus(firestore);
+    const colRef = collection(firestore, COLLECTION_NAME);
+    const getDocsPromise = getDocs(colRef);
+    const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+
+    const snapshot = await Promise.race([getDocsPromise, timeoutPromise]);
+
+    if (!snapshot || snapshot.empty) {
       return [...DEFAULT_SRANAN_CORPUS];
     }
 
@@ -185,13 +180,16 @@ export interface TTSCacheRecord {
  * Retrieve TTS audio record from Cloud Firestore cache by hash.
  */
 export async function getTTSAudioFromFirestore(hash: string): Promise<TTSCacheRecord | null> {
-  const firestore = getFirestoreDB();
-  if (!firestore) return null;
-
   try {
+    const firestore = getFirestoreDB();
+    if (!firestore) return null;
+
     const docRef = doc(firestore, TTS_COLLECTION_NAME, hash);
-    const snapshot = await getDoc(docRef);
-    if (snapshot.exists()) {
+    const getDocPromise = getDoc(docRef);
+    const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500));
+
+    const snapshot = await Promise.race([getDocPromise, timeoutPromise]);
+    if (snapshot && snapshot.exists()) {
       return snapshot.data() as TTSCacheRecord;
     }
   } catch (err) {
