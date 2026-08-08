@@ -120,6 +120,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
 
   // Hints drawer
   const [hints, setHints] = useState<{ text: string; translation: string; tone: string }[]>([]);
+  const [hintsGrounding, setHintsGrounding] = useState<{ ragEnabled: boolean; sourcesCount: number } | null>(null);
   const [loadingHints, setLoadingHints] = useState(false);
   const [showHintsModal, setShowHintsModal] = useState(false);
 
@@ -391,6 +392,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
       });
       const data = await response.json();
       setHints(data.hints || []);
+      setHintsGrounding(data.groundingMetadata || null);
     } catch (e) {
       console.error('Failed to load hints', e);
     } finally {
@@ -1140,9 +1142,15 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
         <div className="fixed inset-0 z-50 bg-[#2C2C24]/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white border border-[#E8E8DF] rounded-[32px] max-w-lg w-full p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-[#F0F0E8] pb-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Lightbulb className="w-5 h-5 text-[#D48806]" />
                 <h3 className="font-serif font-bold text-lg text-[#2C2C24]">Suggested Responses</h3>
+                {hintsGrounding?.ragEnabled && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-[#E5EADD] text-[#3D4D32] px-2 py-0.5 rounded-full border border-[#B5C4A3]">
+                    <ShieldCheck className="w-3 h-3 text-[#3D4D32]" />
+                    Grounded ({hintsGrounding.sourcesCount} sources)
+                  </span>
+                )}
               </div>
               <button
                 onClick={() => setShowHintsModal(false)}

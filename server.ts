@@ -889,15 +889,23 @@ app.post('/api/hints', async (req, res) => {
 
     const conversationHistory = (messages || []).map((m: any) => `${m.sender.toUpperCase()}: ${m.text}`).join('\n');
 
-    const systemInstruction = `You are a Sranantongo language tutor generating suggested responses (hints) for a learner.
+    const srananRules = isSranan ? `
+CRITICAL ACCENT & LANGUAGE RULES FOR SRANANTONGO (SURINAME):
+- You represent an authentic native Surinamese Sranantongo speaker from Paramaribo, Suriname.
+- Speak ONLY in natural, genuine Sranantongo vocabulary and syntax (e.g. 'Fa waka', 'Bun mamanten', 'Wan bigi odi', 'Sa wani fu nyan', 'Kowru watra').
+- STRICT RAG & DICTIONARY MANDATE: Sranantongo is a Low-Resource Language. You MUST ONLY use authentic Sranantongo vocabulary and words explicitly present in the RAG Knowledge Base context below or standard verified Sranantongo dictionary entries.
+- ABSOLUTELY NO INVENTED WORDS OR AI HALLUCINATIONS:
+  1. COLD WATER: Strictly use "kowru watra" or "kowru dringi". NEVER use "koudi", "koudy", or "kewti watra" (these are AI hallucinations caused by forced Dutch suffixing).
+  2. HEARTY GREETINGS: Strictly use "wan bigi odi", "wan switi kon", "switi odi", or "bun kon". NEVER use "seryusu odi" or "seryusu" for greetings ("seryusu" means solemn or strict).
+  3. DINING PREFERENCES: Strictly use "sa wani fu nyan" or "wani nyan". NEVER use "lobi fu nyan" for asking food preferences ("lobi" denotes deep romantic affection, not a polite dining choice).
+` : '';
+
+    const systemInstruction = `You are a warm, authentic Sranantongo language tutor generating suggested responses (hints) for a learner.
 Target Language: ${targetLanguage || 'Sranantongo'}
 Learner Level: ${level || 'A2'}
 Scenario Title: ${scenario?.title || 'Casual Chat'}
 
-STRICT RAG GROUNDING & LOW-RESOURCE LANGUAGE MANDATE:
-- Sranantongo is a Low-Resource Language. You MUST ONLY use authentic Sranantongo vocabulary and expressions directly grounded in the RAG Knowledge Base context provided below or standard verified Sranantongo dictionary entries.
-- ABSOLUTELY NO INVENTED WORDS OR PSEUDO-COMPOUNDS (e.g., NEVER suggest fake words like "kewti" or "koto watra"). For cold water, suggest "koudi watra" or "kold watra".
-- All 3 hint options MUST be 100% authentic Sranantongo.
+${srananRules}
 
 ${ragGroundingInstructions}`;
 
@@ -993,7 +1001,16 @@ Return JSON:
       }
     }
 
-    res.json(resultObj);
+    const responseSnippets = groundedSnippets.slice(0, 5);
+
+    res.json({
+      ...resultObj,
+      groundingMetadata: {
+        ragEnabled: useRag && responseSnippets.length > 0,
+        sourcesCount: responseSnippets.length,
+        groundedSnippets: responseSnippets
+      }
+    });
   } catch (error: any) {
     console.error('Error in /api/hints:', error);
     res.status(500).json({ hints: [] });
