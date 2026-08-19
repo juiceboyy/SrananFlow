@@ -1136,7 +1136,10 @@ app.post('/api/tts', async (req, res) => {
           textToSpeak.toLowerCase().trim() === itemWord ||
           (itemTitle.includes(textToSpeak.toLowerCase().trim()) && item.phonetic)
         ) {
-          matchedCorpusPhonetics.push(`- "${item.srananText}": pronounced [${item.phonetic}]`);
+          const cleanPhonetic = (item.phonetic || '')
+            .replace(/([a-zA-Z]+)(ng|NG)-(i|I)\b/g, (m, p, ng) => `${p}${ng}-ee`)
+            .replace(/([a-zA-Z]+)(ng|NG)-(a|A)\b/g, (m, p, ng) => `${p}${ng}-ah`);
+          matchedCorpusPhonetics.push(`- "${item.srananText}": pronounced [${cleanPhonetic}], smooth legato velar nasal, no glottal stop.`);
         }
       }
     });
@@ -1144,12 +1147,12 @@ app.post('/api/tts', async (req, res) => {
     const combinedPhoneticNotes = Array.from(new Set([...srananPhoneticRules, ...matchedCorpusPhonetics])).join('\n');
 
     // Dynamic Phonetic Hashing: Include active corpus phonetic signatures into the audio hash
-    // v6 key triggers fresh synthesis with acoustic transcript optimization (smooth legato [ŋi], no glottal stop)
+    // v7 key triggers fresh synthesis with sanitized phonetic guidance
     const phoneticSignature = matchedCorpusPhonetics.length > 0
       ? crypto.createHash('md5').update(matchedCorpusPhonetics.sort().join('|')).digest('hex').substring(0, 10)
       : 'std';
 
-    const hashInput = `v6_sranan_tts_${textToSpeak.trim().toLowerCase()}_${selectedVoice}_${phoneticSignature}`;
+    const hashInput = `v7_sranan_tts_${textToSpeak.trim().toLowerCase()}_${selectedVoice}_${phoneticSignature}`;
     const hash = crypto.createHash('md5').update(hashInput).digest('hex');
 
     const wavCachePath = path.join(publicAudioCacheDir, `${hash}.wav`);
