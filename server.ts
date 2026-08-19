@@ -15,7 +15,8 @@ import {
   deleteBatchCorpusItemsFromFirestore,
   resetFirestoreCorpusToDefault,
   getTTSAudioFromFirestore,
-  saveTTSAudioToFirestore
+  saveTTSAudioToFirestore,
+  deleteTTSAudioFromFirestore
 } from './src/lib/firebaseStore';
 import {
   buildSsmlFromText,
@@ -1061,7 +1062,7 @@ function createWavHeader(pcmLength: number, sampleRate = 24000, numChannels = 1,
 // 4. Text-To-Speech (TTS) Endpoint using Gemini 3.6 Flash as sole engine with MD5 Audio Caching
 app.post('/api/tts', async (req, res) => {
   try {
-    const { text, voiceName, targetLanguage } = req.body;
+    const { text, voiceName, targetLanguage, forceRegenerate } = req.body;
     if (!text || typeof text !== 'string' || !text.trim()) {
       return res.status(400).json({ error: 'Text parameter is required.' });
     }
@@ -1124,7 +1125,15 @@ app.post('/api/tts', async (req, res) => {
     activeCorpus.forEach((item) => {
       if (item.srananText && item.phonetic) {
         const itemWord = item.srananText.toLowerCase().trim();
-        if (wordsInText.includes(itemWord) || textToSpeak.toLowerCase().includes(itemWord)) {
+        const itemTitle = (item.title || '').toLowerCase().trim();
+        const wordRegex = new RegExp(`\\b${itemWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+
+        if (
+          wordsInText.includes(itemWord) ||
+          wordRegex.test(textToSpeak) ||
+          textToSpeak.toLowerCase().trim() === itemWord ||
+          (itemTitle.includes(textToSpeak.toLowerCase().trim()) && item.phonetic)
+        ) {
           matchedCorpusPhonetics.push(`- "${item.srananText}": pronounced [${item.phonetic}]`);
         }
       }
@@ -1132,63 +1141,69 @@ app.post('/api/tts', async (req, res) => {
 
     const combinedPhoneticNotes = Array.from(new Set([...srananPhoneticRules, ...matchedCorpusPhonetics])).join('\n');
 
-    // MD5 Hashing Server-Side Audio Caching (v3 key forces regeneration with enhanced phonetic Director's Notes)
-    const hashInput = `v3_sranan_tts_${textToSpeak.trim().toLowerCase()}_${selectedVoice}`;
+    // Dynamic Phonetic Hashing: Include active corpus phonetic signatures into the audio hash
+    // Any change to pronunciation rules immediately computes a fresh hash without stale cache overlap
+    const phoneticSignature = matchedCorpusPhonetics.length > 0
+      ? crypto.createHash('md5').update(matchedCorpusPhonetics.sort().join('|')).digest('hex').substring(0, 10)
+      : 'std';
+
+    const hashInput = `v4_sranan_tts_${textToSpeak.trim().toLowerCase()}_${selectedVoice}_${phoneticSignature}`;
     const hash = crypto.createHash('md5').update(hashInput).digest('hex');
 
     const wavCachePath = path.join(publicAudioCacheDir, `${hash}.wav`);
     const mp3CachePath = path.join(publicAudioCacheDir, `${hash}.mp3`);
 
-    // Return cached audio immediately if available on local disk
-    if (fs.existsSync(wavCachePath)) {
-      const cachedBuffer = fs.readFileSync(wavCachePath);
-      return res.json({
-        audioUrl: `/audio-cache/${hash}.wav`,
-        audioBase64: cachedBuffer.toString('base64'),
-        mimeType: 'audio/wav',
-        provider: 'audio-cache'
-      });
-    }
-
-    if (fs.existsSync(mp3CachePath)) {
-      const cachedBuffer = fs.readFileSync(mp3CachePath);
-      return res.json({
-        audioUrl: `/audio-cache/${hash}.mp3`,
-        audioBase64: cachedBuffer.toString('base64'),
-        mimeType: 'audio/mp3',
-        provider: 'audio-cache'
-      });
-    }
-
-    // Check Cloud Firestore persistent cache if not present on local disk
-    const cloudRecord = await getTTSAudioFromFirestore(hash).catch((err) => {
-      console.error('Error querying Cloud Firestore TTS cache:', err);
-      return null;
-    });
-
-    if (cloudRecord && cloudRecord.audioBase64) {
-      const ext = cloudRecord.mimeType === 'audio/mp3' ? 'mp3' : 'wav';
-      const cacheFilePath = path.join(publicAudioCacheDir, `${hash}.${ext}`);
-
-      // Save to local disk so future requests in the current session hit disk instantly
-      try {
-        if (!fs.existsSync(publicAudioCacheDir)) {
-          fs.mkdirSync(publicAudioCacheDir, { recursive: true });
-        }
-        const audioBuf = Buffer.from(cloudRecord.audioBase64, 'base64');
-        fs.writeFileSync(cacheFilePath, audioBuf);
-      } catch (e) {
-        console.error('Failed to save Firestore cached audio to local disk:', e);
+    // Return cached audio immediately if available on local disk (unless forceRegenerate is true)
+    if (!forceRegenerate) {
+      if (fs.existsSync(wavCachePath)) {
+        const cachedBuffer = fs.readFileSync(wavCachePath);
+        return res.json({
+          audioUrl: `/audio-cache/${hash}.wav`,
+          audioBase64: cachedBuffer.toString('base64'),
+          mimeType: 'audio/wav',
+          provider: 'audio-cache'
+        });
       }
 
-      console.log(`[TTS Cache Hit] Retrieved audio [${hash}] from persistent Cloud Firestore.`);
+      if (fs.existsSync(mp3CachePath)) {
+        const cachedBuffer = fs.readFileSync(mp3CachePath);
+        return res.json({
+          audioUrl: `/audio-cache/${hash}.mp3`,
+          audioBase64: cachedBuffer.toString('base64'),
+          mimeType: 'audio/mp3',
+          provider: 'audio-cache'
+        });
+      }
 
-      return res.json({
-        audioUrl: `/audio-cache/${hash}.${ext}`,
-        audioBase64: cloudRecord.audioBase64,
-        mimeType: cloudRecord.mimeType || 'audio/wav',
-        provider: 'firestore-audio-cache'
+      // Check Cloud Firestore persistent cache if not present on local disk
+      const cloudRecord = await getTTSAudioFromFirestore(hash).catch((err) => {
+        console.error('Error querying Cloud Firestore TTS cache:', err);
+        return null;
       });
+
+      if (cloudRecord && cloudRecord.audioBase64) {
+        const ext = cloudRecord.mimeType === 'audio/mp3' ? 'mp3' : 'wav';
+        const cacheFilePath = path.join(publicAudioCacheDir, `${hash}.${ext}`);
+
+        try {
+          if (!fs.existsSync(publicAudioCacheDir)) {
+            fs.mkdirSync(publicAudioCacheDir, { recursive: true });
+          }
+          const audioBuf = Buffer.from(cloudRecord.audioBase64, 'base64');
+          fs.writeFileSync(cacheFilePath, audioBuf);
+        } catch (e) {
+          console.error('Failed to save Firestore cached audio to local disk:', e);
+        }
+
+        console.log(`[TTS Cache Hit] Retrieved audio [${hash}] from persistent Cloud Firestore.`);
+
+        return res.json({
+          audioUrl: `/audio-cache/${hash}.${ext}`,
+          audioBase64: cloudRecord.audioBase64,
+          mimeType: cloudRecord.mimeType || 'audio/wav',
+          provider: 'firestore-audio-cache'
+        });
+      }
     }
 
     // Call Gemini 3.1 Flash TTS model strictly with official prompt structure

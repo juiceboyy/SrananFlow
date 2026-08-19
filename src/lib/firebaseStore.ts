@@ -221,3 +221,22 @@ export async function saveTTSAudioToFirestore(record: TTSCacheRecord): Promise<b
     return false;
   }
 }
+
+/**
+ * Delete a TTS audio record from Cloud Firestore cache by hash.
+ */
+export async function deleteTTSAudioFromFirestore(hash: string): Promise<boolean> {
+  const firestore = getFirestoreDB();
+  if (!firestore || !hash) return false;
+
+  try {
+    const docRef = doc(firestore, TTS_COLLECTION_NAME, hash);
+    await deleteDoc(docRef);
+    console.log(`[Firestore TTS Cache] Deleted cached audio record [${hash}] from Cloud Firestore.`);
+    return true;
+  } catch (err) {
+    console.error('Error deleting TTS item from Cloud Firestore cache:', err);
+    return false;
+  }
+}
+
