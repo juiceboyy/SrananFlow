@@ -46,11 +46,14 @@ export async function loadCorpusFromFirestore(): Promise<RAGCorpusItem[]> {
 
     const colRef = collection(firestore, COLLECTION_NAME);
     const getDocsPromise = getDocs(colRef);
-    const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+    const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 30000));
 
     const snapshot = await Promise.race([getDocsPromise, timeoutPromise]);
 
     if (!snapshot || snapshot.empty) {
+      if (!snapshot) {
+        console.warn('[Firestore] getDocs timed out after 30s, using local dataset fallback.');
+      }
       return [...DEFAULT_SRANAN_CORPUS];
     }
 

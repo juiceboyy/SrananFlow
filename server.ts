@@ -50,7 +50,7 @@ let activeCorpus: RAGCorpusItem[] = [...DEFAULT_SRANAN_CORPUS];
 let isRagGlobalEnabled = true;
 
 // Initialize Firestore persistence asynchronously on server startup
-(async () => {
+const corpusInitPromise = (async () => {
   try {
     const loaded = await loadCorpusFromFirestore();
     if (loaded && loaded.length > 0) {
@@ -61,6 +61,18 @@ let isRagGlobalEnabled = true;
     console.error('[Firestore] Error syncing RAG corpus on startup:', err);
   }
 })();
+
+// Ensure any API request waits for Firestore initialization to complete
+app.use(async (req, res, next) => {
+  if (req.path.startsWith('/api') && corpusInitPromise) {
+    try {
+      await corpusInitPromise;
+    } catch (e) {
+      console.error('Error waiting for corpus initialization:', e);
+    }
+  }
+  next();
+});
 
 // Helper to safely get Gemini client
 function getGenAI() {
@@ -383,7 +395,15 @@ Return JSON:
 // ==========================================
 
 // GET /api/rag/corpus - List all active corpus items & statistics
-app.get('/api/rag/corpus', (req, res) => {
+app.get('/api/rag/corpus', async (req, res) => {
+  try {
+    if (corpusInitPromise) {
+      await corpusInitPromise;
+    }
+  } catch (e) {
+    console.error('Error waiting for corpus init:', e);
+  }
+
   const categoriesCount: Record<string, number> = {};
   let totalWords = 0;
 
@@ -1062,6 +1082,9 @@ function createWavHeader(pcmLength: number, sampleRate = 24000, numChannels = 1,
 // 4. Text-To-Speech (TTS) Endpoint using Gemini 3.6 Flash as sole engine with MD5 Audio Caching
 app.post('/api/tts', async (req, res) => {
   try {
+    if (corpusInitPromise) {
+      await corpusInitPromise;
+    }
     const { text, voiceName, targetLanguage, forceRegenerate } = req.body;
     if (!text || typeof text !== 'string' || !text.trim()) {
       return res.status(400).json({ error: 'Text parameter is required.' });
