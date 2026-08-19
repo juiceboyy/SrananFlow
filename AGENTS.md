@@ -55,9 +55,9 @@ Sranantongo is a Low-Resource Language. AI models must strictly adhere to authen
 
 ---
 
-## 2. Gemini Text-To-Speech (TTS) Pronunciation Rules
+## 2. Text-To-Speech (TTS) & ElevenLabs Multilingual v2 Pronunciation Rules
 
-When generating audio via Gemini TTS or constructing Director's Notes for speech synthesis, ensure the following phonetic guidelines are passed:
+When generating audio via ElevenLabs Multilingual v2 or fallback Gemini TTS, ensure the following phonetic guidelines are passed:
 
 * **Strict Velar Nasal "NG" Rule (PURE [ŋ], ZERO Plosives, NO Glottal Stops)**:
   * Whenever "ng" is followed by a vowel (e.g., `grantangi`, `tangi`, `dringi`, `singi`, `nanga`, `manga`), pronounce "ng" as a smooth, continuous velar nasal [ŋ] (like in English "singer" [ˈsɪŋər], "stringy" [ˈstrɪŋi], "clingy" [ˈklɪŋi]) gliding seamlessly directly into the vowel without any pause, syllable break, or plosive release.

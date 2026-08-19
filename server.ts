@@ -25,6 +25,11 @@ import {
   sanitizeXmlText,
   sanitizeIpaPhoneme
 } from './src/utils/ssmlBuilder';
+import {
+  synthesizeElevenLabsAudio,
+  resolveElevenLabsVoiceId,
+  prepareElevenLabsAcousticTranscript
+} from './src/lib/elevenLabsTts';
 
 dotenv.config();
 
@@ -1172,12 +1177,21 @@ app.post('/api/tts', async (req, res) => {
     const combinedPhoneticNotes = Array.from(new Set([...srananPhoneticRules, ...matchedCorpusPhonetics])).join('\n');
 
     // Dynamic Phonetic Hashing: Include active corpus phonetic signatures into the audio hash
-    // v10 key triggers fresh synthesis with acoustic transcript optimization (pure velar nasal [ŋi]/[ŋa] via ng-y / ng-ah mapping, no hard [ɡ] plosives, no glottal stop)
     const phoneticSignature = matchedCorpusPhonetics.length > 0
       ? crypto.createHash('md5').update(matchedCorpusPhonetics.sort().join('|')).digest('hex').substring(0, 10)
       : 'std';
 
-    const hashInput = `v10_sranan_tts_${textToSpeak.trim().toLowerCase()}_${selectedVoice}_${phoneticSignature}`;
+    const hasElevenLabs = !!(
+      process.env.ELEVENLABS_API_KEY &&
+      process.env.ELEVENLABS_API_KEY.trim() &&
+      process.env.ELEVENLABS_API_KEY !== 'MY_ELEVENLABS_API_KEY'
+    );
+
+    const elevenVoiceId = resolveElevenLabsVoiceId(selectedVoice);
+
+    const hashInput = hasElevenLabs
+      ? `v12_elevenlabs_${textToSpeak.trim().toLowerCase()}_${elevenVoiceId}_${phoneticSignature}`
+      : `v10_sranan_tts_${textToSpeak.trim().toLowerCase()}_${selectedVoice}_${phoneticSignature}`;
     const hash = crypto.createHash('md5').update(hashInput).digest('hex');
 
     const wavCachePath = path.join(publicAudioCacheDir, `${hash}.wav`);
@@ -1236,20 +1250,39 @@ app.post('/api/tts', async (req, res) => {
       }
     }
 
-    // Acoustic Pre-Processing for Neural TTS:
-    // Transforms 'ngi' endings into 'ng-y' and 'nga' into 'ng-ah' in the synthesized transcript.
-    // This forces the neural TTS engine to apply the English morphological velar nasal rule (like stringy/tangy/singer),
-    // guaranteeing pure [ŋi] and [ŋa] transitions with ZERO hard [ɡ] plosives across all sentences and corpus entries.
-    const acousticTranscript = isSranan
-      ? textToSpeak
-          .replace(/\b([a-zA-Z]+)ngi\b/gi, '$1ng-y')
-          .replace(/\b([a-zA-Z]+)nga\b/gi, '$1ng-ah')
-          .replace(/\bbrede\b/gi, 'bred-e')
-          .replace(/\bseryusu\s+odi\b/gi, 'switi kon')
-      : textToSpeak;
+    let finalBuffer: Buffer | undefined;
+    let ext = 'mp3';
+    let finalMimeType = 'audio/mp3';
+    let providerName = 'elevenlabs-multilingual-v2';
 
-    // Call Gemini 3.1 Flash TTS model strictly with official prompt structure
-    const fullPrompt = `### AUDIO PROFILE
+    // 1. Attempt synthesis with ElevenLabs Multilingual v2 if API key is configured
+    if (hasElevenLabs) {
+      try {
+        console.log(`[TTS] Synthesizing speech via ElevenLabs Multilingual v2 (Voice: ${elevenVoiceId})...`);
+        const elevenResult = await synthesizeElevenLabsAudio({
+          text: textToSpeak,
+          voiceId: selectedVoice,
+          isSranan
+        });
+        if (elevenResult && elevenResult.buffer) {
+          finalBuffer = elevenResult.buffer;
+          ext = 'mp3';
+          finalMimeType = 'audio/mp3';
+          providerName = 'elevenlabs-multilingual-v2';
+        }
+      } catch (elevenErr: any) {
+        console.warn(`[ElevenLabs TTS] Synthesis failed (${elevenErr?.message || elevenErr}), falling back to Gemini TTS...`);
+      }
+    }
+
+    // 2. Fallback to Gemini 3.1 Flash TTS if ElevenLabs was not available or failed
+    if (!finalBuffer) {
+      // Acoustic Pre-Processing for Neural Gemini TTS:
+      const acousticTranscript = isSranan
+        ? prepareElevenLabsAcousticTranscript(textToSpeak, true)
+        : textToSpeak;
+
+      const fullPrompt = `### AUDIO PROFILE
 Native Sranantongo speaker from Suriname.
 
 ### DIRECTOR'S NOTES
@@ -1260,90 +1293,89 @@ ${combinedPhoneticNotes}
 #### TRANSCRIPT
 ${acousticTranscript}`;
 
-    const config: any = {
-      responseModalities: ['AUDIO'],
-      speechConfig: {
-        voiceConfig: {
-          prebuiltVoiceConfig: { voiceName: selectedVoice }
+      const config: any = {
+        responseModalities: ['AUDIO'],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName: selectedVoice }
+          }
+        }
+      };
+
+      const model = 'gemini-3.1-flash-tts-preview';
+      let base64Audio: string | undefined;
+      let lastTtsError: any = null;
+
+      for (let attempt = 0; attempt < 3 && !base64Audio; attempt++) {
+        try {
+          const response = await callWithRetry(() =>
+            ai.models.generateContent({
+              model,
+              contents: [{ parts: [{ text: fullPrompt }] }],
+              config
+            })
+          );
+          const parts = response?.candidates?.[0]?.content?.parts || [];
+          const audioPart = parts.find((p: any) => p.inlineData?.data);
+          base64Audio = audioPart?.inlineData?.data;
+
+          if (!base64Audio && attempt < 2) {
+            console.warn(`[TTS Retry] Attempt ${attempt + 1} returned no audio part, retrying in 500ms...`);
+            await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+          }
+        } catch (err: any) {
+          lastTtsError = err;
+          console.warn(`[TTS Retry] Attempt ${attempt + 1} failed:`, err?.message || err);
+          if (attempt < 2) {
+            await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+          }
         }
       }
-    };
 
-    const model = 'gemini-3.1-flash-tts-preview';
-    let base64Audio: string | undefined;
-    let lastTtsError: any = null;
+      if (!base64Audio && lastTtsError) {
+        const isQuota =
+          lastTtsError?.status === 429 ||
+          lastTtsError?.code === 429 ||
+          (lastTtsError?.message && (
+            lastTtsError.message.includes('429') ||
+            lastTtsError.message.toLowerCase().includes('quota') ||
+            lastTtsError.message.includes('RESOURCE_EXHAUSTED')
+          ));
 
-    for (let attempt = 0; attempt < 3 && !base64Audio; attempt++) {
-      try {
-        const response = await callWithRetry(() =>
-          ai.models.generateContent({
-            model,
-            contents: [{ parts: [{ text: fullPrompt }] }],
-            config
-          })
-        );
-        const parts = response?.candidates?.[0]?.content?.parts || [];
-        const audioPart = parts.find((p: any) => p.inlineData?.data);
-        base64Audio = audioPart?.inlineData?.data;
-
-        if (!base64Audio && attempt < 2) {
-          console.warn(`[TTS Retry] Attempt ${attempt + 1} returned no audio part, retrying in 500ms...`);
-          await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+        if (isQuota) {
+          return res.status(429).json({
+            error: 'Spraakgeneratie quota limiet bereikt (HTTP 429). Probeer het later opnieuw.',
+            details: lastTtsError?.message || 'Quota limit reached'
+          });
         }
-      } catch (err: any) {
-        lastTtsError = err;
-        console.warn(`[TTS Retry] Attempt ${attempt + 1} failed:`, err?.message || err);
-        if (attempt < 2) {
-          await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
-        }
-      }
-    }
 
-    if (!base64Audio && lastTtsError) {
-      const isQuota =
-        lastTtsError?.status === 429 ||
-        lastTtsError?.code === 429 ||
-        (lastTtsError?.message && (
-          lastTtsError.message.includes('429') ||
-          lastTtsError.message.toLowerCase().includes('quota') ||
-          lastTtsError.message.includes('RESOURCE_EXHAUSTED')
-        ));
-
-      if (isQuota) {
-        return res.status(429).json({
-          error: 'Spraakgeneratie quota limiet bereikt (HTTP 429). Probeer het later opnieuw.',
-          details: lastTtsError?.message || 'Quota limit reached'
+        return res.status(500).json({
+          error: `Audio genereren mislukt via ${model}: ${lastTtsError?.message || 'Gemini error'}`
         });
       }
 
-      return res.status(500).json({
-        error: `Audio genereren mislukt via ${model}: ${lastTtsError?.message || 'Gemini error'}`
-      });
+      if (base64Audio) {
+        const rawBuffer = Buffer.from(base64Audio, 'base64');
+        const header4 = rawBuffer.subarray(0, 4).toString();
+        if (header4 === 'RIFF') {
+          finalBuffer = rawBuffer;
+          ext = 'wav';
+          finalMimeType = 'audio/wav';
+        } else if (header4.startsWith('ID3') || (rawBuffer[0] === 0xFF && (rawBuffer[1] & 0xE0) === 0xE0)) {
+          finalBuffer = rawBuffer;
+          ext = 'mp3';
+          finalMimeType = 'audio/mp3';
+        } else {
+          const wavHeader = createWavHeader(rawBuffer.length, 24000, 1, 16);
+          finalBuffer = Buffer.concat([wavHeader, rawBuffer]);
+          ext = 'wav';
+          finalMimeType = 'audio/wav';
+        }
+        providerName = 'gemini-3.1-flash-tts-preview';
+      }
     }
 
-    if (base64Audio) {
-      const rawBuffer = Buffer.from(base64Audio, 'base64');
-      let finalBuffer: Buffer;
-      let ext: string;
-      let finalMimeType: string;
-
-      const header4 = rawBuffer.subarray(0, 4).toString();
-      if (header4 === 'RIFF') {
-        finalBuffer = rawBuffer;
-        ext = 'wav';
-        finalMimeType = 'audio/wav';
-      } else if (header4.startsWith('ID3') || (rawBuffer[0] === 0xFF && (rawBuffer[1] & 0xE0) === 0xE0)) {
-        finalBuffer = rawBuffer;
-        ext = 'mp3';
-        finalMimeType = 'audio/mp3';
-      } else {
-        // Raw 24kHz 16-bit PCM -> wrap in 44-byte RIFF/WAV header
-        const wavHeader = createWavHeader(rawBuffer.length, 24000, 1, 16);
-        finalBuffer = Buffer.concat([wavHeader, rawBuffer]);
-        ext = 'wav';
-        finalMimeType = 'audio/wav';
-      }
-
+    if (finalBuffer) {
       try {
         if (!fs.existsSync(publicAudioCacheDir)) {
           fs.mkdirSync(publicAudioCacheDir, { recursive: true });
@@ -1371,11 +1403,11 @@ ${acousticTranscript}`;
         audioUrl: `/audio-cache/${hash}.${ext}`,
         audioBase64: base64Str,
         mimeType: finalMimeType,
-        provider: 'gemini-3.1-flash-tts-preview'
+        provider: providerName
       });
     } else {
-      console.error('Gemini TTS response had no inlineData audio part after retries.');
-      return res.status(500).json({ error: 'Geen audio gegenereerd door Gemini 3.1 Flash TTS model.' });
+      console.error('No audio generated by TTS engine.');
+      return res.status(500).json({ error: 'Geen audio gegenereerd door spraakengine.' });
     }
   } catch (error: any) {
     console.error('Error in /api/tts:', error);

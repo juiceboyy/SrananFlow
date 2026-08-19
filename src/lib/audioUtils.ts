@@ -265,7 +265,7 @@ export async function playAudioForText(
     console.warn('TTS fetch failed:', err);
   }
 
-  console.warn('[TTS] Gemini TTS is niet beschikbaar, vallen terug op browser spraaksynthese.');
+  console.warn('[TTS] Server TTS is unavailable, falling back to browser speech synthesis.');
   await speakTextNative(cleanText, langCode, rate);
   return true;
 }
