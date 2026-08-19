@@ -1070,10 +1070,11 @@ app.post('/api/tts', async (req, res) => {
     const ai = getGenAI();
 
     const isSranan =
+      !targetLanguage ||
       targetLanguage === 'sr' ||
       targetLanguage === 'Sranantongo' ||
       targetLanguage?.toLowerCase().includes('sranan') ||
-      /^(Fa waka|Bun|Mi|Yu|A|Wi|Pe|San|Switi|Wan|Safrisafri|Grantangi|Kon)/i.test(text.trim());
+      true;
 
     // Retrieve RAG Grounding knowledge for TTS text formatting
     let textToSpeak = text;
@@ -1147,12 +1148,12 @@ app.post('/api/tts', async (req, res) => {
     const combinedPhoneticNotes = Array.from(new Set([...srananPhoneticRules, ...matchedCorpusPhonetics])).join('\n');
 
     // Dynamic Phonetic Hashing: Include active corpus phonetic signatures into the audio hash
-    // v7 key triggers fresh synthesis with sanitized phonetic guidance
+    // v8 key triggers fresh synthesis with acoustic transcript optimization (smooth legato [ŋi]/[ŋa], no glottal stop)
     const phoneticSignature = matchedCorpusPhonetics.length > 0
       ? crypto.createHash('md5').update(matchedCorpusPhonetics.sort().join('|')).digest('hex').substring(0, 10)
       : 'std';
 
-    const hashInput = `v7_sranan_tts_${textToSpeak.trim().toLowerCase()}_${selectedVoice}_${phoneticSignature}`;
+    const hashInput = `v8_sranan_tts_${textToSpeak.trim().toLowerCase()}_${selectedVoice}_${phoneticSignature}`;
     const hash = crypto.createHash('md5').update(hashInput).digest('hex');
 
     const wavCachePath = path.join(publicAudioCacheDir, `${hash}.wav`);
@@ -1212,11 +1213,12 @@ app.post('/api/tts', async (req, res) => {
     }
 
     // Acoustic Pre-Processing for Neural TTS:
-    // Transforms "ngi" endings into "ngy" and "brede" to "bred-e" in the synthesized transcript
-    // This removes the glottal stop [ʔ] caused by Dutch/Germanic morpheme tokenization and ensures a continuous [ŋi] legato glide.
+    // Transforms "ngi" endings into "ngee" and "nga" into "ngah" in the synthesized transcript
+    // This removes the glottal stop [ʔ] caused by Dutch/Germanic morpheme tokenization and ensures a continuous [ŋi] legato glide across all words and phrases.
     const acousticTranscript = isSranan
       ? textToSpeak
-          .replace(/\b([a-zA-Z]+)ngi\b/gi, '$1ngy')
+          .replace(/\b([a-zA-Z]+)ngi\b/gi, '$1ngee')
+          .replace(/\b([a-zA-Z]+)nga\b/gi, '$1ngah')
           .replace(/\bbrede\b/gi, 'bred-e')
           .replace(/\bseryusu\s+odi\b/gi, 'switi kon')
       : textToSpeak;
