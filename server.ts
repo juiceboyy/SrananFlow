@@ -1172,12 +1172,12 @@ app.post('/api/tts', async (req, res) => {
     const combinedPhoneticNotes = Array.from(new Set([...srananPhoneticRules, ...matchedCorpusPhonetics])).join('\n');
 
     // Dynamic Phonetic Hashing: Include active corpus phonetic signatures into the audio hash
-    // v9 key triggers fresh synthesis with acoustic transcript optimization (pure velar nasal [ŋi]/[ŋa], no hard [ɡ] plosives, no glottal stop)
+    // v10 key triggers fresh synthesis with acoustic transcript optimization (pure velar nasal [ŋi]/[ŋa] via ng-y / ng-ah mapping, no hard [ɡ] plosives, no glottal stop)
     const phoneticSignature = matchedCorpusPhonetics.length > 0
       ? crypto.createHash('md5').update(matchedCorpusPhonetics.sort().join('|')).digest('hex').substring(0, 10)
       : 'std';
 
-    const hashInput = `v9_sranan_tts_${textToSpeak.trim().toLowerCase()}_${selectedVoice}_${phoneticSignature}`;
+    const hashInput = `v10_sranan_tts_${textToSpeak.trim().toLowerCase()}_${selectedVoice}_${phoneticSignature}`;
     const hash = crypto.createHash('md5').update(hashInput).digest('hex');
 
     const wavCachePath = path.join(publicAudioCacheDir, `${hash}.wav`);
@@ -1237,9 +1237,13 @@ app.post('/api/tts', async (req, res) => {
     }
 
     // Acoustic Pre-Processing for Neural TTS:
-    // Preserves authentic word boundaries and accents while preventing English/Dutch lexical mismatches
+    // Transforms 'ngi' endings into 'ng-y' and 'nga' into 'ng-ah' in the synthesized transcript.
+    // This forces the neural TTS engine to apply the English morphological velar nasal rule (like stringy/tangy/singer),
+    // guaranteeing pure [ŋi] and [ŋa] transitions with ZERO hard [ɡ] plosives across all sentences and corpus entries.
     const acousticTranscript = isSranan
       ? textToSpeak
+          .replace(/\b([a-zA-Z]+)ngi\b/gi, '$1ng-y')
+          .replace(/\b([a-zA-Z]+)nga\b/gi, '$1ng-ah')
           .replace(/\bbrede\b/gi, 'bred-e')
           .replace(/\bseryusu\s+odi\b/gi, 'switi kon')
       : textToSpeak;

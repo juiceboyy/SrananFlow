@@ -59,13 +59,15 @@ Sranantongo is a Low-Resource Language. AI models must strictly adhere to authen
 
 When generating audio via Gemini TTS or constructing Director's Notes for speech synthesis, ensure the following phonetic guidelines are passed:
 
-* **Strict Velar Nasal "NG" Rule (NO Glottal Stops, NO Hard Plosives)**:
-  * Whenever "ng" is followed by a vowel (e.g., `grantangi`, `tangi`, `dringi`, `singi`, `nanga`, `manga`), pronounce "ng" as a smooth, continuous velar nasal [ŋ] (like in "singer", "belonging") gliding seamlessly directly into the vowel without any pause or syllable break.
-  * NEVER insert a glottal stop [ʔ], NEVER pause before the vowel (no `gran-tang...ee`), and NEVER pronounce a hard "g" or "k".
-* **`grantangi` / `tangi`**: Pronounce strictly as **`gran-TANG-i`** / **`TAHNG-ee`** (smooth continuous velar nasal [ŋi] glide, NO glottal stop, NO hard "k" or "g").
-* **`dringi`**: Pronounce strictly as **`DRING-ee`** (smooth continuous nasal [ŋi] glide, like "ring" + "ee"), NEVER with a glottal stop, hard "k" or "nk" sound.
-* **`singi`**: Pronounce strictly as **`SING-ee`** (smooth continuous nasal [ŋi] glide, no glottal stop).
-* **`manga` / `nanga`**: Pronounce as **`MAHNG-ah`** / **`NAHNG-ah`** with a smooth nasal [ŋa] glide, no glottal stop.
+* **Strict Velar Nasal "NG" Rule (PURE [ŋ], ZERO Plosives, NO Glottal Stops)**:
+  * Whenever "ng" is followed by a vowel (e.g., `grantangi`, `tangi`, `dringi`, `singi`, `nanga`, `manga`), pronounce "ng" as a smooth, continuous velar nasal [ŋ] (like in English "singer" [ˈsɪŋər], "stringy" [ˈstrɪŋi], "clingy" [ˈklɪŋi]) gliding seamlessly directly into the vowel without any pause, syllable break, or plosive release.
+  * NEVER insert a glottal stop [ʔ], NEVER pause before the vowel, and ABSOLUTELY NEVER pronounce a hard "g" [ɡ] or "k" [k].
+  * ❌ NEVER rewrite transcripts to `-gee` (e.g. `dringee`, `tangee`) because `-gee` induces the English neural TTS engine to pronounce a hard "g" / [ɡ] or "DRING-gi" / "DRING-gee".
+  * ✅ **Universal Acoustic Transcript Mapping**: In `server.ts`, all words ending in `-ngi` are mapped to `-ng-y` (e.g. `dring-y`, `tang-y`, `grantang-y`, `sing-y`) and `-nga` to `-ng-ah` (e.g. `nang-ah`, `mang-ah`). This forces neural TTS engines to apply the English velar nasal rule (as in *stringy*, *tangy*), guaranteeing pure [ŋ] without hard [ɡ] plosives across all sentences, multi-word phrases, and corpus cards.
+* **`dringi`**: Pronounce strictly as **`/ˈdriŋi/`** (rhymes with English *"stringy"*, smooth continuous velar nasal [ŋi] glide, zero hard "g" [ɡ], NEVER "dring-gi" or "dring-gee").
+* **`grantangi` / `tangi`**: Pronounce strictly as **`/ɡranˈtaŋi/`** / **`/ˈtaŋi/`** (rhymes with English *"tangy"*, smooth continuous velar nasal [ŋi] glide, NO hard "g", NEVER "tahn-gi" or "tan-gee").
+* **`singi`**: Pronounce strictly as **`/ˈsiŋi/`** (rhymes with English *"sing-y"*, smooth continuous nasal [ŋi] glide, no hard "g" or glottal stop).
+* **`manga` / `nanga`**: Pronounce as **`/ˈmaŋa/`** / **`/ˈnaŋa/`** with a smooth continuous nasal [ŋa] glide, no hard "g".
 * **`brede`**: Pronounce as **`BRED-e`** with a short open "e" (like English "bread").
 * **`alesi`**: Pronounce as **`ah-lay-see`**.
 * **`moksi`**: Pronounce as **`mok-see`**.
