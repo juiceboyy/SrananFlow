@@ -1144,12 +1144,12 @@ app.post('/api/tts', async (req, res) => {
     const combinedPhoneticNotes = Array.from(new Set([...srananPhoneticRules, ...matchedCorpusPhonetics])).join('\n');
 
     // Dynamic Phonetic Hashing: Include active corpus phonetic signatures into the audio hash
-    // v5 key triggers fresh synthesis with smooth velar nasal (no glottal stops)
+    // v6 key triggers fresh synthesis with acoustic transcript optimization (smooth legato [ŋi], no glottal stop)
     const phoneticSignature = matchedCorpusPhonetics.length > 0
       ? crypto.createHash('md5').update(matchedCorpusPhonetics.sort().join('|')).digest('hex').substring(0, 10)
       : 'std';
 
-    const hashInput = `v5_sranan_tts_${textToSpeak.trim().toLowerCase()}_${selectedVoice}_${phoneticSignature}`;
+    const hashInput = `v6_sranan_tts_${textToSpeak.trim().toLowerCase()}_${selectedVoice}_${phoneticSignature}`;
     const hash = crypto.createHash('md5').update(hashInput).digest('hex');
 
     const wavCachePath = path.join(publicAudioCacheDir, `${hash}.wav`);
@@ -1208,6 +1208,16 @@ app.post('/api/tts', async (req, res) => {
       }
     }
 
+    // Acoustic Pre-Processing for Neural TTS:
+    // Transforms "ngi" endings into "ngy" and "brede" to "bred-e" in the synthesized transcript
+    // This removes the glottal stop [ʔ] caused by Dutch/Germanic morpheme tokenization and ensures a continuous [ŋi] legato glide.
+    const acousticTranscript = isSranan
+      ? textToSpeak
+          .replace(/\b([a-zA-Z]+)ngi\b/gi, '$1ngy')
+          .replace(/\bbrede\b/gi, 'bred-e')
+          .replace(/\bseryusu\s+odi\b/gi, 'switi kon')
+      : textToSpeak;
+
     // Call Gemini 3.1 Flash TTS model strictly with official prompt structure
     const fullPrompt = `### AUDIO PROFILE
 Native Sranantongo speaker from Suriname.
@@ -1218,7 +1228,7 @@ STRICT PRONUNCIATION GUIDANCE FOR SRANANTONGO:
 ${combinedPhoneticNotes}
 
 #### TRANSCRIPT
-${textToSpeak}`;
+${acousticTranscript}`;
 
     const config: any = {
       responseModalities: ['AUDIO'],
