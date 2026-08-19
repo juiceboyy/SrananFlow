@@ -1103,11 +1103,13 @@ app.post('/api/tts', async (req, res) => {
 
     // Build dynamic pronunciation guidance from corpus and standard Sranantongo phonetic rules
     const srananPhoneticRules = [
-      '- "dringi": pronounce strictly as "dring-ee" with a smooth nasal "ng" sound (as in "sing"), NEVER with a hard "k" or "nk" sound.',
-      '- "tangi": pronounce as "tahn-gee" with a smooth nasal "ng" sound, no hard "k".',
-      '- "singi": pronounce as "sing-ee" with a smooth nasal "ng" sound, no hard "k".',
-      '- "manga" / "nanga": pronounce with a smooth nasal "ng" sound.',
+      '- UNIVERSAL VELAR NASAL "NG" RULE (NO GLOTTAL STOPS, NO HARD PLOSIVES): Whenever "ng" is followed by a vowel (e.g. "grantangi", "tangi", "dringi", "singi", "nanga", "manga", "tangitangi"), pronounce "ng" as a smooth continuous velar nasal [ŋ] (like in "singer", "belonging") gliding seamlessly directly into the vowel without any pause or syllable break. NEVER insert a glottal stop [ʔ], NEVER pause before the vowel (no "gran-tang...ee"), and NEVER pronounce a hard "g" or "k".',
+      '- "grantangi" / "tangi": pronounce strictly as "gran-TANG-i" / "TAHNG-ee" with a smooth continuous velar nasal [ŋi] glide, NO glottal stop, NO hard "k" or "g".',
+      '- "dringi": pronounce strictly as "DRING-ee" (smooth continuous nasal [ŋi] glide, like "ring" + "ee"), NEVER with a glottal stop, hard "k" or "nk" sound.',
+      '- "singi": pronounce as "SING-ee" with a smooth continuous nasal [ŋi] glide, no glottal stop.',
+      '- "nanga" / "manga": pronounce as "NAHNG-ah" / "MAHNG-ah" with a smooth continuous nasal [ŋa] glide, no glottal stop.',
       '- "alesi": pronounce as "ah-lay-see".',
+      '- "brede": pronounce as "BRED-e" with a short open "e" (like English "bread").',
       '- "moksi": pronounce as "mok-see".',
       '- "switi": pronounce as "swee-tee".',
       '- "bun": pronounce as "boon".',
@@ -1142,12 +1144,12 @@ app.post('/api/tts', async (req, res) => {
     const combinedPhoneticNotes = Array.from(new Set([...srananPhoneticRules, ...matchedCorpusPhonetics])).join('\n');
 
     // Dynamic Phonetic Hashing: Include active corpus phonetic signatures into the audio hash
-    // Any change to pronunciation rules immediately computes a fresh hash without stale cache overlap
+    // v5 key triggers fresh synthesis with smooth velar nasal (no glottal stops)
     const phoneticSignature = matchedCorpusPhonetics.length > 0
       ? crypto.createHash('md5').update(matchedCorpusPhonetics.sort().join('|')).digest('hex').substring(0, 10)
       : 'std';
 
-    const hashInput = `v4_sranan_tts_${textToSpeak.trim().toLowerCase()}_${selectedVoice}_${phoneticSignature}`;
+    const hashInput = `v5_sranan_tts_${textToSpeak.trim().toLowerCase()}_${selectedVoice}_${phoneticSignature}`;
     const hash = crypto.createHash('md5').update(hashInput).digest('hex');
 
     const wavCachePath = path.join(publicAudioCacheDir, `${hash}.wav`);

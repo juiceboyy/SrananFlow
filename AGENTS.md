@@ -59,10 +59,14 @@ Sranantongo is a Low-Resource Language. AI models must strictly adhere to authen
 
 When generating audio via Gemini TTS or constructing Director's Notes for speech synthesis, ensure the following phonetic guidelines are passed:
 
-* **`dringi`**: Pronounce strictly as **`dring-ee`** with a smooth nasal "ng" sound (as in "sing"), NEVER with a hard "k" or "nk" sound.
-* **`tangi`**: Pronounce as **`tahn-gee`** (smooth nasal "ng").
-* **`singi`**: Pronounce as **`sing-ee`** (smooth nasal "ng").
-* **`manga` / `nanga`**: Smooth nasal "ng" sound.
+* **Strict Velar Nasal "NG" Rule (NO Glottal Stops, NO Hard Plosives)**:
+  * Whenever "ng" is followed by a vowel (e.g., `grantangi`, `tangi`, `dringi`, `singi`, `nanga`, `manga`), pronounce "ng" as a smooth, continuous velar nasal [ŋ] (like in "singer", "belonging") gliding seamlessly directly into the vowel without any pause or syllable break.
+  * NEVER insert a glottal stop [ʔ], NEVER pause before the vowel (no `gran-tang...ee`), and NEVER pronounce a hard "g" or "k".
+* **`grantangi` / `tangi`**: Pronounce strictly as **`gran-TANG-i`** / **`TAHNG-ee`** (smooth continuous velar nasal [ŋi] glide, NO glottal stop, NO hard "k" or "g").
+* **`dringi`**: Pronounce strictly as **`DRING-ee`** (smooth continuous nasal [ŋi] glide, like "ring" + "ee"), NEVER with a glottal stop, hard "k" or "nk" sound.
+* **`singi`**: Pronounce strictly as **`SING-ee`** (smooth continuous nasal [ŋi] glide, no glottal stop).
+* **`manga` / `nanga`**: Pronounce as **`MAHNG-ah`** / **`NAHNG-ah`** with a smooth nasal [ŋa] glide, no glottal stop.
+* **`brede`**: Pronounce as **`BRED-e`** with a short open "e" (like English "bread").
 * **`alesi`**: Pronounce as **`ah-lay-see`**.
 * **`moksi`**: Pronounce as **`mok-see`**.
 * **`switi`**: Pronounce as **`swee-tee`**.

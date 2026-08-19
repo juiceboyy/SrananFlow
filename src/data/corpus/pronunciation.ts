@@ -30,10 +30,10 @@ export const CURATED_PRONUNCIATION_GUIDES: RAGCorpusItem[] = [
     title: 'Pronunciation: Gratitude & Polite Vowels (Grantangi)',
     category: 'pronunciation',
     srananText: 'Grantangi fu a yepi',
-    phonetic: 'GRAN-TAN-gi FU A YE-pi',
+    phonetic: 'gran-TANG-i FU A YE-pi',
     translation: 'Thank you very much for the help',
-    usageNotes: 'Slight nasalization on GRAN-TAN-gi. Soft semi-vowel transition in YE-pi.',
-    tags: ['pronunciation', 'politeness', 'stress-capitalized'],
+    usageNotes: 'Smooth continuous velar nasal [ŋ] gliding directly into "i" (gran-TANG-i), strictly with NO glottal stop and NO hard "g" or "k".',
+    tags: ['pronunciation', 'politeness', 'stress-capitalized', 'velar-nasal'],
     source: 'Sranantongo Phonetics Guide',
     dateAdded: '2026-08-03'
   },
