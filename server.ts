@@ -1240,40 +1240,56 @@ ${acousticTranscript}`;
     };
 
     const model = 'gemini-3.1-flash-tts-preview';
-    let response: any;
+    let base64Audio: string | undefined;
+    let lastTtsError: any = null;
 
-    try {
-      response = await callWithRetry(() =>
-        ai.models.generateContent({
-          model,
-          contents: [{ parts: [{ text: fullPrompt }] }],
-          config
-        })
-      );
-    } catch (err: any) {
-      console.error(`Gemini TTS call (${model}) failed:`, err?.message || err);
+    for (let attempt = 0; attempt < 3 && !base64Audio; attempt++) {
+      try {
+        const response = await callWithRetry(() =>
+          ai.models.generateContent({
+            model,
+            contents: [{ parts: [{ text: fullPrompt }] }],
+            config
+          })
+        );
+        const parts = response?.candidates?.[0]?.content?.parts || [];
+        const audioPart = parts.find((p: any) => p.inlineData?.data);
+        base64Audio = audioPart?.inlineData?.data;
+
+        if (!base64Audio && attempt < 2) {
+          console.warn(`[TTS Retry] Attempt ${attempt + 1} returned no audio part, retrying in 500ms...`);
+          await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+        }
+      } catch (err: any) {
+        lastTtsError = err;
+        console.warn(`[TTS Retry] Attempt ${attempt + 1} failed:`, err?.message || err);
+        if (attempt < 2) {
+          await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+        }
+      }
+    }
+
+    if (!base64Audio && lastTtsError) {
       const isQuota =
-        err?.status === 429 ||
-        err?.code === 429 ||
-        (err?.message && (
-          err.message.includes('429') ||
-          err.message.toLowerCase().includes('quota') ||
-          err.message.includes('RESOURCE_EXHAUSTED')
+        lastTtsError?.status === 429 ||
+        lastTtsError?.code === 429 ||
+        (lastTtsError?.message && (
+          lastTtsError.message.includes('429') ||
+          lastTtsError.message.toLowerCase().includes('quota') ||
+          lastTtsError.message.includes('RESOURCE_EXHAUSTED')
         ));
 
       if (isQuota) {
         return res.status(429).json({
           error: 'Spraakgeneratie quota limiet bereikt (HTTP 429). Probeer het later opnieuw.',
-          details: err?.message || 'Quota limit reached'
+          details: lastTtsError?.message || 'Quota limit reached'
         });
       }
 
-      return res.status(500).json({ error: `Audio genereren mislukt via ${model}: ${err?.message || 'Gemini error'}` });
+      return res.status(500).json({
+        error: `Audio genereren mislukt via ${model}: ${lastTtsError?.message || 'Gemini error'}`
+      });
     }
-
-    const parts = response?.candidates?.[0]?.content?.parts || [];
-    const audioPart = parts.find((p: any) => p.inlineData?.data);
-    const base64Audio = audioPart?.inlineData?.data;
 
     if (base64Audio) {
       const rawBuffer = Buffer.from(base64Audio, 'base64');
@@ -1328,7 +1344,7 @@ ${acousticTranscript}`;
         provider: 'gemini-3.1-flash-tts-preview'
       });
     } else {
-      console.error('Gemini TTS response had no inlineData audio part:', JSON.stringify(parts));
+      console.error('Gemini TTS response had no inlineData audio part after retries.');
       return res.status(500).json({ error: 'Geen audio gegenereerd door Gemini 3.1 Flash TTS model.' });
     }
   } catch (error: any) {
